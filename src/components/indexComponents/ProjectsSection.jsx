@@ -1,13 +1,13 @@
 export default function ProjectsSection() {
   return (
-    <section className="w-full h-screen bg-zinc-900">
+    <section className="w-full mt-30 pt-40 bg-zinc-900">
       <div className="flex justify-center">
         <span className="text-8xl bbh-sans-bogle-regular text-stone-100">
           STUFF IM ON
         </span>
       </div>
-      <div className="flex w-full px-10 my-10 text-xl">
-        <div className="flex flex-col w-1/2 gap-5 text-stone-100">
+      <div className="flex flex-col md:flex-row w-full px-10 mt-10 text-xl">
+        <div className="flex flex-col w-full md:w-1/2 gap-5 text-stone-100">
           <span>
             Actualmente estoy trabajando en varios proyectos de bonsái, cada uno
             con características y objetivos propios. A continuación tienes una
@@ -46,7 +46,7 @@ export default function ProjectsSection() {
             </li>
           </ul>
         </div>
-        <div className="w-1/2"></div>
+        <div className="w-full md:w-1/2"></div>
       </div>
     </section>
   );

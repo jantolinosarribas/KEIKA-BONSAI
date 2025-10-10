@@ -1,13 +1,13 @@
 export default function WhatsSection() {
   return (
-    <section className="w-full h-screen">
+    <section className="w-full">
       <div className="mx-10">
         <span className="text-8xl bbh-sans-bogle-regular text-green-800">
           WHATS KEIKA BONSAI
         </span>
       </div>
-      <div className="flex w-full px-10 my-2">
-        <div className="flex flex-col w-1/2 gap-5 text-green-900">
+      <div className="flex flex-col md:flex-row w-full px-10 my-2">
+        <div className="flex flex-col w-full md:w-1/2 gap-5 text-green-900">
           <span className="text-xl">
             Keika Bonsai es un proyecto personal dedicado exclusivamente al arte
             del bonsái. Nace del deseo de aprender desde cero, de comprender
@@ -27,11 +27,7 @@ export default function WhatsSection() {
             disfrutar de la calma que solo este arte puede ofrecer.
           </span>
         </div>
-        <div className="w-1/2"></div>
-      </div>
-      <div class="landing-section">
-        <div class="content">
-        </div>
+        <div className="w-full md:w-1/2"></div>
       </div>
     </section>
   );

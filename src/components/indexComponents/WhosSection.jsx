@@ -1,14 +1,14 @@
 export default function WhosSection() {
   return (
-    <section className="w-full h-screen">
+    <section className="w-full mt-60">
       <div className="mx-10 text-right">
         <span className="text-8xl bbh-sans-bogle-regular text-green-800">
           WHOS BEHIND KEIKA BONSAI
         </span>
       </div>
-      <div className="flex w-full px-10 my-2 text-right">
-        <div className="w-1/2"></div>
-        <div className="flex flex-col w-1/2 gap-5 text-green-900">
+      <div className="flex flex-col md:flex-row w-full px-10 my-2 text-right">
+        <div className="w-full md:w-1/2"></div>
+        <div className="flex flex-col w-full md:w-1/2 gap-5 text-green-900">
           <span className="text-xl">
             Soy José Miguel Antolinos, aunque muchos me conocen como Jaxxty. Soy
             desarrollador de software, tengo 22 años y actualmente vivo en
