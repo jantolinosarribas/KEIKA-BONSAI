@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
-import Header from "../components/Header"
+import Header from "../components/Header";
+import BackgroundPattern from "../components/decoration/BackgroundPattern";
 ---
 
 <html lang="es">
@@ -10,7 +11,7 @@ import Header from "../components/Header"
     <title>KeikaBonsai</title>
   </head>
   <body class="bg-green-100">
-    <Header client:load/>
-      <slot />
+    <Header client:load />
+    <slot />
   </body>
 </html>
