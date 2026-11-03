@@ -1,14 +1,17 @@
 ---
 import "../styles/global.css";
 import Header from "../components/Header";
+import ImageViewer from "../components/ImageViewer.astro";
 import { ClientRouter } from "astro:transitions";
+
+const { title = "KeikaBonsai" } = Astro.props;
 ---
 
-<html lang="es">
+<html lang="es" style="background-color: var(--color-green-100, #dcfce7);" transition:animate="none">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>KeikaBonsai</title>
+    <title>{title}</title>
     <script is:inline data-astro-rerun>
       (() => {
         const introKey = "keikabonsai-home-intro-played";
@@ -49,6 +52,7 @@ import { ClientRouter } from "astro:transitions";
     <main transition:animate="fade">
       <slot />
     </main>
+    <ImageViewer />
     <script>
       const updateHeaderContrast = () => {
         const header = document.querySelector(".site-header");

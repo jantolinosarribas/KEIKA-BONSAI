@@ -1,0 +1,100 @@
+---
+import type { GetStaticPaths } from "astro";
+import { ArrowLeft, Sprout, ZoomIn } from "lucide-react";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import WorkJournal from "../../components/WorkJournal";
+import { categories, plants } from "../../data/plants";
+
+export const getStaticPaths = (() => {
+  return plants.map((plant) => ({
+    params: { id: plant.id },
+    props: { plant },
+  }));
+}) satisfies GetStaticPaths;
+
+const { plant } = Astro.props;
+const category = categories.find((category) => category.id === plant.category);
+const description = plant.description?.trim();
+const details = [
+  ["Edad", plant.age ?? "Por documentar"],
+  ["Tiempo en cultivo", plant.cultivationTime ?? "Por documentar"],
+  ["Origen", plant.origin ?? "Por documentar"],
+  ["Ubicación", plant.location ?? "Por documentar"],
+  ["Sustrato", plant.substrate ?? "Por documentar"],
+  ["Diseño futuro", plant.futureDesign ?? "Por definir"],
+];
+---
+
+<BaseLayout title={`${plant.commonName} | Arbolario | KeikaBonsai`}>
+  <div class="mx-auto mt-20 max-w-6xl px-6 pt-8 pb-24 md:px-10">
+    <a
+      href="/work"
+      class="inline-flex items-center gap-2 text-sm text-green-800 underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-700"
+    >
+      <ArrowLeft size={16} aria-hidden="true" />
+      Volver al Arbolario
+    </a>
+
+    <header class="pt-8 pb-8">
+      <p class="text-sm text-green-700">{category?.label}</p>
+      <h1 class="mt-2 break-words text-3xl text-green-950 md:text-4xl">{plant.commonName}</h1>
+      <p class="mt-2 text-lg italic text-green-900/70">{plant.scientificName}</p>
+    </header>
+
+    <div class="grid items-start gap-8 md:grid-cols-2 md:gap-12">
+      <div class="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-green-900/5">
+        {plant.image ? (
+          <>
+            <img
+              src={plant.image}
+              alt={plant.commonName}
+              class="size-full object-contain"
+              fetchpriority="high"
+            />
+            <button
+              type="button"
+              data-image-viewer
+              data-image-src={plant.image}
+              data-image-alt={plant.commonName}
+              aria-haspopup="dialog"
+              aria-label={`Ampliar foto de ${plant.commonName}`}
+              title={`Ampliar foto de ${plant.commonName}`}
+              class="absolute right-3 bottom-3 flex size-11 items-center justify-center rounded bg-black/55 text-white hover:bg-black/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+            >
+              <ZoomIn size={18} aria-hidden="true" />
+            </button>
+          </>
+        ) : (
+          <div class="flex flex-col items-center gap-3 text-green-900/45">
+            <Sprout size={40} strokeWidth={1.4} aria-hidden="true" />
+            <span class="text-sm">Foto pendiente</span>
+          </div>
+        )}
+      </div>
+
+      <section aria-labelledby="plant-information">
+        <h2 id="plant-information" class="text-2xl text-green-950">Ficha del ejemplar</h2>
+        <dl class="mt-4 grid grid-cols-2 gap-x-6">
+          {details.map(([label, value]) => (
+            <div class="min-w-0 border-t border-green-900/15 py-4">
+              <dt class="text-sm text-green-700">{label}</dt>
+              <dd class="mt-1 break-words text-green-950">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    </div>
+
+    <section aria-labelledby="plant-description" class="mt-10">
+      <h2 id="plant-description" class="text-2xl text-green-950">Descripción</h2>
+      <p class={`mt-3 max-w-3xl whitespace-pre-line break-words leading-relaxed ${description ? "text-base text-green-900" : "text-sm text-green-900/60"}`}>
+        {description || "Todavía no hay descripción."}
+      </p>
+    </section>
+
+    <section id="diario" aria-labelledby="plant-journal" class="mt-14 scroll-mt-24 border-t border-green-900/20 pt-8">
+      <h2 id="plant-journal" class="text-2xl text-green-950">Diario de este árbol</h2>
+      <WorkJournal plantId={plant.id} embedded />
+    </section>
+  </div>
+</BaseLayout>

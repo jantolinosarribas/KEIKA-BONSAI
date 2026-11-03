@@ -2,6 +2,33 @@
 @import url('https://fonts.googleapis.com/css2?family=BBH+Sans+Bogle&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 @import "tailwindcss";
 
+@layer base {
+  :where(a[href], button, summary, select, [role="button"], [role="tab"], input[type="button"], input[type="submit"], input[type="reset"]):not(:disabled):not([aria-disabled="true"]) {
+    @apply cursor-pointer;
+  }
+
+  :where(button, select, input, [role="button"], [role="tab"]):is(:disabled, [aria-disabled="true"]) {
+    @apply cursor-not-allowed;
+  }
+}
+
+@supports (interpolate-size: allow-keywords) and selector(::details-content) {
+  @media (prefers-reduced-motion: no-preference) {
+    .plant-details::details-content {
+      interpolate-size: allow-keywords;
+      height: 0;
+      overflow: clip;
+      opacity: 0;
+      transition: height 280ms ease, opacity 200ms ease, content-visibility 280ms allow-discrete;
+    }
+
+    .plant-details[open]::details-content {
+      height: auto;
+      opacity: 1;
+    }
+  }
+}
+
 .bbh-sans-bogle-regular {
   font-family: "BBH Sans Bogle", sans-serif;
   font-weight: 400;

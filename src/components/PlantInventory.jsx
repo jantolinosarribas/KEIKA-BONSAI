@@ -1,74 +1,6 @@
 import { useRef, useState } from "react";
-import { ChevronDown, Sprout } from "lucide-react";
-
-const categories = [
-  { id: "prebonsais", label: "Prebonsáis" },
-  { id: "bonsais", label: "Bonsáis" },
-];
-
-const plants = [
-  {
-    category: "prebonsais",
-    commonName: "Pino negro japonés",
-    scientificName: "Pinus thunbergii",
-    image: "/WhatsApp%20Image%202026-11-03%20at%2012.28.10%20PM.jpeg",
-  },
-  {
-    category: "prebonsais",
-    commonName: "Higuera",
-    scientificName: "Ficus carica",
-    image: "/WhatsApp%20Image%202026-11-03%20at%2012.28.10%20PM%20(2).jpeg",
-  },
-  {
-    category: "prebonsais",
-    commonName: "Granado",
-    scientificName: "Punica granatum",
-  },
-  {
-    category: "prebonsais",
-    commonName: "Aguacate",
-    scientificName: "Persea americana",
-    image: "/WhatsApp%20Image%202026-11-03%20at%2012.28.10%20PM%20(3).jpeg",
-  },
-  {
-    category: "prebonsais",
-    commonName: "Olivo",
-    scientificName: "Olea europaea",
-  },
-  {
-    category: "prebonsais",
-    commonName: "Falso ciprés",
-    scientificName: "Chamaecyparis sp.",
-  },
-  {
-    category: "prebonsais",
-    commonName: "Arce japonés",
-    scientificName: "Acer palmatum",
-    image: "/WhatsApp%20Image%202026-11-03%20at%2012.28.10%20PM%20(1).jpeg",
-  },
-  {
-    category: "bonsais",
-    commonName: "Acebuche",
-    scientificName: "Olea europaea var. sylvestris",
-  },
-  {
-    category: "bonsais",
-    commonName: "Ginkgo",
-    scientificName: "Ginkgo biloba",
-  },
-  {
-    category: "bonsais",
-    commonName: "Olmo chino",
-    scientificName: "Ulmus parvifolia",
-    image: "/WhatsApp%20Image%202026-11-03%20at%2012.52.23%20PM%20(1).jpeg",
-  },
-  {
-    category: "bonsais",
-    commonName: "Enebro rastrero japonés",
-    scientificName: "Juniperus procumbens 'Nana'",
-    image: "/WhatsApp%20Image%202026-11-03%20at%2012.52.23%20PM.jpeg",
-  },
-];
+import { ChevronDown, Sprout, ZoomIn } from "lucide-react";
+import { categories, plants } from "../data/plants";
 
 export default function PlantInventory() {
   const [activeCategory, setActiveCategory] = useState(categories[0].id);
@@ -103,14 +35,8 @@ export default function PlantInventory() {
   return (
     <section className="w-full px-6 pb-32 md:px-10">
       <div className="mx-auto max-w-6xl">
-        <p className="max-w-2xl text-lg leading-relaxed text-green-900">
-          Cada árbol tiene su propia historia. Aquí puedes conocer los
-          ejemplares que forman mi colección y consultar los detalles que voy
-          descubriendo con el tiempo.
-        </p>
-
         <div
-          className="mt-10 flex gap-7 border-b border-green-900/20"
+          className="flex gap-7 border-b border-green-900/20"
           role="tablist"
           aria-label="Filtrar árboles por tipo"
         >
@@ -149,21 +75,35 @@ export default function PlantInventory() {
           tabIndex={0}
           className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-700"
         >
-          <div className="grid gap-4 pt-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid items-start gap-4 pt-6 sm:grid-cols-2 lg:grid-cols-3">
             {visiblePlants.map((plant) => (
               <details
-                key={plant.scientificName}
-                className="group min-w-0 border border-green-900/15 bg-white/30"
+                key={plant.id}
+                className="plant-details group min-w-0 overflow-hidden rounded-lg border border-green-900/15 bg-white/30"
               >
-                <summary className="list-none cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-700 [&::-webkit-details-marker]:hidden">
+                <summary className="list-none cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-green-700 [&::-webkit-details-marker]:hidden">
                   <div className="relative aspect-[4/3] overflow-hidden bg-green-900/5">
                     {plant.image ? (
-                      <img
-                        src={plant.image}
-                        alt={plant.commonName}
-                        className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                        loading="lazy"
-                      />
+                      <>
+                        <img
+                          src={plant.image}
+                          alt={plant.commonName}
+                          className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                          loading="lazy"
+                        />
+                        <button
+                          type="button"
+                          data-image-viewer
+                          data-image-src={plant.image}
+                          data-image-alt={plant.commonName}
+                          aria-haspopup="dialog"
+                          aria-label={`Ampliar foto de ${plant.commonName}`}
+                          title={`Ampliar foto de ${plant.commonName}`}
+                          className="absolute right-3 bottom-3 flex size-11 items-center justify-center rounded bg-black/55 text-white hover:bg-black/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+                        >
+                          <ZoomIn size={18} aria-hidden="true" />
+                        </button>
+                      </>
                     ) : (
                       <div className="flex size-full flex-col items-center justify-center gap-3 text-green-900/45">
                         <Sprout aria-hidden="true" size={30} strokeWidth={1.4} />
@@ -176,16 +116,19 @@ export default function PlantInventory() {
                       <span className="mb-1 block text-sm text-green-700">
                         {categories[activeCategoryIndex].label.slice(0, -1)}
                       </span>
-                      <span className="block text-xl text-green-950">
+                      <a
+                        href={`/arbolario/${plant.id}`}
+                        className="block text-xl text-green-950 underline decoration-green-800/30 underline-offset-4 hover:decoration-green-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-700"
+                      >
                         {plant.commonName}
-                      </span>
+                      </a>
                       <span className="mt-1 block text-sm italic text-green-900/70">
                         {plant.scientificName}
                       </span>
                     </span>
                     <ChevronDown
                       aria-hidden="true"
-                      className="mt-1 shrink-0 transition-transform group-open:rotate-180"
+                      className="mt-1 shrink-0 transition-transform duration-300 group-open:rotate-180 motion-reduce:transition-none"
                       size={20}
                     />
                   </div>
@@ -194,18 +137,18 @@ export default function PlantInventory() {
                   <dl className="grid gap-4 text-sm sm:grid-cols-2">
                     <div>
                       <dt className="text-green-700">Edad / tiempo en cultivo</dt>
-                      <dd className="mt-1 text-green-950">Por documentar</dd>
+                      <dd className="mt-1 text-green-950">{plant.age ?? plant.cultivationTime ?? "Por documentar"}</dd>
                     </div>
                     <div>
                       <dt className="text-green-700">Diseño futuro</dt>
-                      <dd className="mt-1 text-green-950">Por definir</dd>
+                      <dd className="mt-1 text-green-950">{plant.futureDesign ?? "Por definir"}</dd>
                     </div>
                   </dl>
                   <a
-                    href={`/blog?categoria=${plant.category}`}
+                    href={`/arbolario/${plant.id}#diario`}
                     className="mt-5 inline-flex items-center gap-2 text-sm text-green-800 underline decoration-green-800/40 underline-offset-4 hover:decoration-green-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-700"
                   >
-                    Ver diario de {plant.category === "prebonsais" ? "prebonsáis" : "bonsáis"}
+                    Ver diario de este árbol
                   </a>
                 </div>
               </details>

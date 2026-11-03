@@ -1,0 +1,158 @@
+---
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+---
+
+<dialog
+  id="image-viewer"
+  aria-label="Foto ampliada"
+  class="fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-transparent p-0 text-white backdrop:bg-black/85"
+>
+  <div data-image-viewer-backdrop class="flex size-full items-center justify-center p-4 pt-20 pb-8 md:p-12 md:pt-20">
+    <span data-image-viewer-position hidden aria-live="polite" aria-atomic="true" class="absolute top-7 left-4 text-sm"></span>
+    <button
+      type="button"
+      data-image-viewer-close
+      aria-label="Cerrar foto ampliada"
+      title="Cerrar foto ampliada"
+      class="absolute top-4 right-4 flex size-11 items-center justify-center rounded bg-black/50 text-white hover:bg-black/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+    >
+      <X size={24} aria-hidden="true" />
+    </button>
+    <button
+      type="button"
+      data-image-viewer-step="-1"
+      hidden
+      aria-label="Foto anterior"
+      title="Foto anterior"
+      class="absolute top-1/2 left-3 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded bg-black/60 text-white hover:bg-black/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+    >
+      <ChevronLeft size={24} aria-hidden="true" />
+    </button>
+    <button
+      type="button"
+      data-image-viewer-step="1"
+      hidden
+      aria-label="Foto siguiente"
+      title="Foto siguiente"
+      class="absolute top-1/2 right-3 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded bg-black/60 text-white hover:bg-black/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+    >
+      <ChevronRight size={24} aria-hidden="true" />
+    </button>
+    <figure class="flex max-h-full min-h-0 max-w-full flex-col items-center gap-3">
+      <img data-image-viewer-image alt="" class="min-h-0 max-w-full object-contain" />
+      <figcaption data-image-viewer-caption class="shrink-0 text-center text-sm"></figcaption>
+    </figure>
+  </div>
+</dialog>
+
+<script>
+  type ViewerPhoto = { src: string; alt: string };
+
+  let restoreViewer: (() => void) | undefined;
+  let galleryPhotos: ViewerPhoto[] = [];
+  let activePhotoIndex = 0;
+
+  function showPhoto(index: number) {
+    if (!galleryPhotos.length) return;
+    activePhotoIndex = Number.isInteger(index)
+      ? (index + galleryPhotos.length) % galleryPhotos.length
+      : 0;
+    const photo = galleryPhotos[activePhotoIndex];
+    const dialog = document.querySelector<HTMLDialogElement>("#image-viewer");
+    const image = dialog?.querySelector<HTMLImageElement>("[data-image-viewer-image]");
+    const caption = dialog?.querySelector<HTMLElement>("[data-image-viewer-caption]");
+    const position = dialog?.querySelector<HTMLElement>("[data-image-viewer-position]");
+    if (!dialog || !image || !caption || !position) return;
+
+    image.src = photo.src;
+    image.alt = photo.alt;
+    caption.textContent = photo.alt;
+    position.textContent = `${activePhotoIndex + 1} / ${galleryPhotos.length}`;
+    position.hidden = galleryPhotos.length < 2;
+    dialog.querySelectorAll<HTMLButtonElement>("[data-image-viewer-step]").forEach((button) => {
+      button.hidden = galleryPhotos.length < 2;
+    });
+  }
+
+  function restoreImageViewer() {
+    restoreViewer?.();
+    restoreViewer = undefined;
+    galleryPhotos = [];
+    activePhotoIndex = 0;
+  }
+
+  function closeImageViewer() {
+    const dialog = document.querySelector<HTMLDialogElement>("#image-viewer");
+    if (!dialog?.open) return;
+    dialog.close();
+    restoreImageViewer();
+  }
+
+  document.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element)) return;
+
+    const trigger = event.target.closest<HTMLButtonElement>("button[data-image-viewer]");
+    if (trigger) {
+      if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      const dialog = document.querySelector<HTMLDialogElement>("#image-viewer");
+      const image = dialog?.querySelector<HTMLImageElement>("[data-image-viewer-image]");
+      const caption = dialog?.querySelector<HTMLElement>("[data-image-viewer-caption]");
+      if (!dialog || !image || !caption) return;
+
+      event.preventDefault();
+      try {
+        const photos = JSON.parse(trigger.dataset.imageGallery ?? "[]");
+        galleryPhotos = Array.isArray(photos)
+          ? photos.filter((photo) => photo && typeof photo.src === "string" && typeof photo.alt === "string")
+          : [];
+      } catch {
+        galleryPhotos = [];
+      }
+      if (!galleryPhotos.length) {
+        galleryPhotos = [{ src: trigger.dataset.imageSrc ?? "", alt: trigger.dataset.imageAlt ?? "" }];
+      }
+      showPhoto(Number(trigger.dataset.imageIndex ?? 0));
+      const previousOverflow = document.documentElement.style.overflow;
+      document.documentElement.style.overflow = "hidden";
+      restoreViewer = () => {
+        document.documentElement.style.overflow = previousOverflow;
+        image.removeAttribute("src");
+        if (trigger.isConnected) trigger.focus({ preventScroll: true });
+      };
+      dialog.onclose = () => {
+        if (!dialog.open) restoreImageViewer();
+      };
+      dialog.oncancel = (event) => {
+        event.preventDefault();
+        closeImageViewer();
+      };
+      dialog.showModal();
+      return;
+    }
+
+    const navigationButton = event.target.closest<HTMLButtonElement>("#image-viewer [data-image-viewer-step]");
+    if (navigationButton) {
+      event.preventDefault();
+      showPhoto(activePhotoIndex + Number(navigationButton.dataset.imageViewerStep));
+      return;
+    }
+
+    if (
+      event.target.closest("#image-viewer") &&
+      !event.target.matches("[data-image-viewer-image]")
+    ) {
+      closeImageViewer();
+    }
+  }, { capture: true });
+
+  document.addEventListener("keydown", (event) => {
+    const dialog = document.querySelector<HTMLDialogElement>("#image-viewer");
+    if (!dialog?.open || galleryPhotos.length < 2) return;
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      event.preventDefault();
+      showPhoto(activePhotoIndex + (event.key === "ArrowRight" ? 1 : -1));
+    }
+  });
+
+  document.addEventListener("astro:before-swap", closeImageViewer);
+</script>

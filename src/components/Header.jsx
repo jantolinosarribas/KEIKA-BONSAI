@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 
 const navigationLinks = [
-  ["01", "Mis árboles", "/work"],
+  ["01", "Arbolario", "/work"],
   ["02", "Blog", "/blog"],
   ["03", "About Me", "/about"],
   ["04", "Contact", "/contact"],
@@ -48,7 +48,7 @@ export default function Header() {
           <a key={href} href={href} className="header-link group relative flex flex-col items-center gap-0.5 px-1 py-2">
             <span className="text-[0.65rem] leading-none opacity-65">{number}</span>
             <span>{label}</span>
-            <span aria-hidden="true" className="header-link-indicator absolute bottom-0 left-0 h-px w-0 transition-all duration-200 group-hover:w-full group-focus-visible:w-full" />
+            <span aria-hidden="true" className="header-link-indicator absolute bottom-0 left-0 h-px w-0 bg-green-800 transition-all duration-200 group-hover:w-full group-focus-visible:w-full" />
           </a>
         ))}
       </nav>

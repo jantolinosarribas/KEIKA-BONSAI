@@ -1,18 +1,19 @@
 import { useEffect, useRef, useState } from "react";
+import { ZoomIn } from "lucide-react";
+import { plants } from "../data/plants";
+import { journalEntries } from "../data/journalEntries";
 
 const categories = [
   { id: "prebonsais", label: "Prebonsais", singular: "prebonsáis" },
   { id: "bonsais", label: "Bonsais", singular: "bonsáis" },
 ];
 
-const journalEntries = {
-  prebonsais: [],
-  bonsais: [],
-};
-
-export default function WorkJournal() {
-  const [activeCategory, setActiveCategory] = useState(categories[0].id);
+export default function WorkJournal({ plantId, embedded = false }) {
+  const [activeCategory, setActiveCategory] = useState(
+    plants.find((plant) => plant.id === journalEntries[0]?.plantId)?.category ?? categories[0].id,
+  );
   const tabRefs = useRef([]);
+  const selectedPlant = plants.find((plant) => plant.id === plantId);
 
   useEffect(() => {
     const requestedCategory = new URLSearchParams(window.location.search).get(
@@ -28,7 +29,14 @@ export default function WorkJournal() {
     (category) => category.id === activeCategory,
   );
   const activeCategoryData = categories[activeCategoryIndex];
-  const entries = journalEntries[activeCategory];
+  const entries = journalEntries
+    .filter((entry) => {
+      const plant = plants.find((plant) => plant.id === entry.plantId);
+      return selectedPlant
+        ? entry.plantId === selectedPlant.id
+        : plant?.category === activeCategory;
+    })
+    .sort((first, second) => second.date.localeCompare(first.date));
 
   function handleTabKeyDown(event, currentIndex) {
     let nextIndex = currentIndex;
@@ -51,15 +59,11 @@ export default function WorkJournal() {
   }
 
   return (
-    <section className="w-full px-6 pb-32 md:px-10">
+    <section className={embedded ? "w-full" : "w-full px-6 pb-32 md:px-10"}>
       <div className="mx-auto max-w-5xl">
-        <p className="max-w-2xl text-lg leading-relaxed text-green-900">
-          Cada árbol lleva su propio ritmo. Aquí iré anotando las sesiones por
-          fecha: qué hice, qué observé y cómo continúa el proceso.
-        </p>
-
+        {!selectedPlant && (
         <div
-          className="mt-10 flex gap-7 border-b border-green-900/20"
+          className="flex gap-7 border-b border-green-900/20"
           role="tablist"
           aria-label="Filtrar diario por tipo de árbol"
         >
@@ -87,65 +91,94 @@ export default function WorkJournal() {
             );
           })}
         </div>
+        )}
 
         <div
-          id={`panel-${activeCategory}`}
-          role="tabpanel"
-          aria-labelledby={`tab-${activeCategory}`}
-          tabIndex={0}
+          id={selectedPlant ? undefined : `panel-${activeCategory}`}
+          role={selectedPlant ? undefined : "tabpanel"}
+          aria-labelledby={selectedPlant ? undefined : `tab-${activeCategory}`}
+          tabIndex={selectedPlant ? undefined : 0}
           className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-700"
         >
           {entries.length > 0 ? (
-            <ol className="divide-y divide-green-900/15">
-              {entries.map((entry) => (
-                <li key={entry.id} className="py-10">
-                  <article>
-                    <time
-                      dateTime={entry.date}
-                      className="text-sm text-green-700"
-                    >
-                      {entry.dateLabel}
-                    </time>
-                    <h2 className="mt-2 text-2xl text-green-950">
-                      {entry.plantName}
-                    </h2>
-                    <p className="mt-1 text-sm italic text-green-900/70">
-                      {entry.scientificName}
-                    </p>
-                    <h3 className="mt-6 text-lg font-medium text-green-900">
-                      {entry.title}
-                    </h3>
-                    <p className="mt-2 max-w-3xl leading-relaxed text-green-900">
-                      {entry.description}
-                    </p>
-                    {entry.observation && (
-                      <p className="mt-3 max-w-3xl leading-relaxed text-green-900/75">
-                        <span className="font-medium">Observaciones: </span>
-                        {entry.observation}
-                      </p>
-                    )}
-                    {entry.nextStep && (
-                      <p className="mt-3 max-w-3xl leading-relaxed text-green-900/75">
-                        <span className="font-medium">Siguiente paso: </span>
-                        {entry.nextStep}
-                      </p>
-                    )}
-                    {entry.photos?.length > 0 && (
-                      <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                        {entry.photos.map((photo) => (
-                          <img
-                            key={photo.src}
-                            src={photo.src}
-                            alt={photo.alt}
-                            className="h-auto w-full object-cover"
-                            loading="lazy"
-                          />
-                        ))}
+            <ol className="mt-6 space-y-6">
+              {entries.map((entry) => {
+                const plant = plants.find((plant) => plant.id === entry.plantId);
+                return (
+                  <li key={entry.id} id={entry.id} className="scroll-mt-24">
+                    <article className={`grid items-start gap-8 rounded-lg border border-green-900/20 bg-white/20 p-5 md:p-8 ${entry.photos?.length ? "md:grid-cols-[minmax(0,1fr)_16rem]" : ""}`}>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-green-700">
+                          <time dateTime={entry.date}>{entry.dateLabel}</time>
+                          {entry.isMock && <span className="text-green-900/60">Entrada de ejemplo</span>}
+                        </div>
+                        <p className="mt-2 text-lg text-green-900">
+                          <a
+                            href={`/arbolario/${entry.plantId}`}
+                            className="underline decoration-green-800/30 underline-offset-4 hover:decoration-green-800"
+                          >
+                            {plant?.commonName}
+                          </a>
+                        </p>
+                        <p className="mt-1 text-sm italic text-green-900/70">{plant?.scientificName}</p>
+                        <h2 className="mt-6 break-words text-3xl leading-tight font-medium text-green-950">{entry.title}</h2>
+                        <p className="mt-2 max-w-3xl leading-relaxed text-green-900">{entry.description}</p>
+                        {entry.observation && (
+                          <p className="mt-3 max-w-3xl leading-relaxed text-green-900/75">
+                            <span className="font-medium">Observaciones: </span>
+                            {entry.observation}
+                          </p>
+                        )}
+                        {entry.nextStep && (
+                          <p className="mt-3 max-w-3xl leading-relaxed text-green-900/75">
+                            <span className="font-medium">Siguiente paso: </span>
+                            {entry.nextStep}
+                          </p>
+                        )}
                       </div>
-                    )}
-                  </article>
-                </li>
-              ))}
+                      {entry.photos?.length > 0 && (
+                        <div aria-label={`Fotos de ${plant?.commonName}`} className="grid grid-cols-2 gap-3 md:grid-cols-1">
+                          {entry.photos.slice(0, 2).map((photo, photoIndex) => {
+                            const remainingPhotos = entry.photos.length - 1;
+                            const showMore = photoIndex === 1 && remainingPhotos > 1;
+                            return (
+                              <button
+                                key={`${entry.id}-${photoIndex}`}
+                                type="button"
+                                data-image-viewer
+                                data-image-src={photo.src}
+                                data-image-alt={photo.alt}
+                                data-image-gallery={JSON.stringify(entry.photos)}
+                                data-image-index={photoIndex}
+                                aria-haspopup="dialog"
+                                aria-label={showMore ? `Ver ${remainingPhotos} fotos más de ${plant?.commonName}` : `Ampliar foto de ${plant?.commonName}`}
+                                title={showMore ? "Ver todas las fotos" : "Ampliar foto"}
+                                className="relative aspect-[4/3] w-full overflow-hidden bg-green-900/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700"
+                              >
+                                <img
+                                  src={photo.src}
+                                  alt={photo.alt}
+                                  className={`size-full object-cover ${showMore ? "scale-105 blur-sm" : ""}`}
+                                  loading="lazy"
+                                />
+                                {showMore ? (
+                                  <span className="absolute inset-0 flex items-center justify-center bg-black/40 px-2 text-center text-lg text-white">
+                                    {remainingPhotos} fotos más
+                                  </span>
+                                ) : (
+                                  <span aria-hidden="true" className="absolute right-3 bottom-3 flex size-8 items-center justify-center rounded bg-black/55 text-white">
+                                    <ZoomIn size={18} />
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </article>
+                  </li>
+                );
+              })}
             </ol>
           ) : (
             <div className="min-h-72 border-b border-green-900/15 py-12 md:py-16">
@@ -156,13 +189,13 @@ export default function WorkJournal() {
                 />
                 <div>
                   <p className="text-sm text-green-700">
-                    Diario de {activeCategoryData.singular}
+                    Diario de {selectedPlant ? selectedPlant.commonName : activeCategoryData.singular}
                   </p>
                   <h2 className="mt-2 text-2xl text-green-950">
                     Las primeras notas están por venir
                   </h2>
                   <p className="mt-3 leading-relaxed text-green-900">
-                    Cuando documente una sesión, aparecerá aquí con su fecha,
+                    Cuando documente una sesión{selectedPlant ? " de este árbol" : ""}, aparecerá aquí con su fecha,
                     el trabajo realizado y las fotos del proceso.
                   </p>
                 </div>
