@@ -10,21 +10,32 @@ export default function WhosSection() {
         <div className="w-full md:w-1/2"></div>
         <div className="flex flex-col w-full md:w-1/2 gap-5 text-green-900">
           <span className="text-xl">
-            Soy José Miguel Antolinos, aunque muchos me conocen como Jaxxty. Soy
-            desarrollador de software, tengo 22 años y actualmente vivo en
-            Granada. Este proyecto nace de un descubrimiento personal: durante
-            el verano comencé a interesarme por el arte del bonsái, y poco a
-            poco fui quedando fascinado por su calma, su detalle y su filosofía.
+            Soy José Miguel, tengo 23 años. Empecé germinando plantas por mi
+            cuenta; después compré plantines, comencé a alambrarlos y a
+            practicar con ellos. El bonsái me ha enseñado que no todo se puede
+            apresurar: hay que observar cada árbol, pensar antes de actuar y
+            aceptar que cada uno tiene su ritmo. Sigo aprendiendo y disfrutando
+            de cada pequeño cambio.
           </span>
           <span className="text-xl">
-            Combinando mi gusto por la tecnología con esta nueva afición, decidí
-            crear Keika Bonsai como un espacio donde compartir mi progreso,
-            aprendizajes y experiencias mientras avanzo en este camino. Más que
-            una web, es una forma de documentar mi crecimiento —tanto en el arte
-            del bonsái como en mi desarrollo personal y creativo.
+            Por ahora solo he asistido a una sesión de aprendizaje en la
+            Escuela de Bonsái Granada. Allí trabajé un plantón de junípero hasta
+            convertirlo en un bonsái en semicascada que puedes ver en una de
+            las fotos. Estudié diseño y desarrollo de software, y esta web me
+            pareció una buena forma de unir esa formación con mi afición y
+            compartir el camino.
           </span>
-          <a href="/about" className="text-xl underline decoration-green-700 hover:decoration-green-400 cursor-aointer">
-            Si quieres conocer más sobre mí y mi recorrido...
+          <a
+            href="/about"
+            className="group inline-flex items-center justify-end gap-2 text-xl underline decoration-green-700 hover:decoration-green-400"
+          >
+            <span>Si quieres conocer más sobre mí y mi recorrido...</span>
+            <span
+              aria-hidden="true"
+              className="translate-x-[-0.25rem] opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100"
+            >
+              →
+            </span>
           </a>
         </div>
       </div>

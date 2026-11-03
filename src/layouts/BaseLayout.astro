@@ -1,7 +1,7 @@
 ---
 import "../styles/global.css";
 import Header from "../components/Header";
-import BackgroundPattern from "../components/decoration/BackgroundPattern";
+import { ClientRouter } from "astro:transitions";
 ---
 
 <html lang="es">
@@ -9,9 +9,72 @@ import BackgroundPattern from "../components/decoration/BackgroundPattern";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>KeikaBonsai</title>
+    <script is:inline data-astro-rerun>
+      (() => {
+        const introKey = "keikabonsai-home-intro-played";
+        const prefersReducedMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+
+        let hasPlayedIntro = false;
+        try {
+          hasPlayedIntro = sessionStorage.getItem(introKey) === "true";
+        } catch {
+          hasPlayedIntro = true;
+        }
+
+        if (
+          window.location.pathname !== "/" ||
+          prefersReducedMotion ||
+          hasPlayedIntro
+        ) {
+          return;
+        }
+
+        document.documentElement.classList.add("home-intro-pending");
+        try {
+          sessionStorage.setItem(introKey, "true");
+        } catch {}
+
+        window.setTimeout(
+          () => document.documentElement.classList.remove("home-intro-pending"),
+          2900,
+        );
+      })();
+    </script>
+    <ClientRouter />
   </head>
   <body class="bg-green-100">
     <Header client:load />
-    <slot />
+    <main transition:animate="fade">
+      <slot />
+    </main>
+    <script>
+      const updateHeaderContrast = () => {
+        const header = document.querySelector(".site-header");
+        const darkSection = document.querySelector("#projects");
+
+        if (!header || !darkSection) {
+          document.documentElement.classList.remove("nav-over-dark");
+          return;
+        }
+
+        const headerBounds = header.getBoundingClientRect();
+        const sectionBounds = darkSection.getBoundingClientRect();
+        const overlapsDarkSection =
+          sectionBounds.top < headerBounds.bottom &&
+          sectionBounds.bottom > headerBounds.top;
+
+        document.documentElement.classList.toggle(
+          "nav-over-dark",
+          overlapsDarkSection,
+        );
+      };
+
+      window.addEventListener("scroll", updateHeaderContrast, { passive: true });
+      window.addEventListener("resize", updateHeaderContrast);
+      document.addEventListener("astro:page-load", updateHeaderContrast);
+      updateHeaderContrast();
+    </script>
   </body>
 </html>

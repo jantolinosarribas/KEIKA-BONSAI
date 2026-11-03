@@ -1,8 +1,47 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Title from "../components/Title";
+import { ArrowUpRight } from "lucide-react";
 ---
 
 <BaseLayout>
-    <Title title={'about me'}/>
+        <Title title={'SOBRE MI'}/>
+            <section class="w-full px-6 pt-2 pb-12 md:flex md:min-h-[calc(100svh-12.5rem)] md:items-center md:justify-center md:px-10 md:py-8">
+            <div class="mx-auto grid max-w-6xl items-center gap-12 md:-translate-y-10 md:grid-cols-2 md:gap-16">
+                <div class="mx-auto flex w-full max-w-2xl flex-col gap-4 text-base leading-relaxed text-green-900 md:text-lg">
+                    <p>
+                        Soy José Miguel, tengo 23 años y soy de Granada. Me gusta la
+                        naturaleza y disfruto buscando momentos de calma, por eso el bonsái
+                        encaja tanto conmigo. No soy profesional y sigo aprendiendo; en una
+                        sesión en la Escuela de Bonsái Granada aprendí algunas cosas. Con tiempo, me gustaría formar una gran colección.
+                    </p>
+                    <p>
+                        Fuera del bonsái, también me gustan mucho la música y la producción
+                        musical. Creo que este arte se puede disfrutar a cualquier edad:
+                        cada persona puede acercarse a su ritmo, aprender de cada árbol y
+                        encontrar en él su propio momento de tranquilidad.
+                    </p>
+                    <a
+                        href="/contact"
+                        class="group mt-3 inline-flex max-w-full items-center gap-3 rounded-sm bg-green-900 px-5 py-3 text-base text-stone-50 transition-colors hover:bg-green-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-700 md:px-6 md:text-lg"
+                    >
+                        <span>Si quieres hablar conmigo, aquí me encuentras.</span>
+                        <ArrowUpRight aria-hidden="true" className="shrink-0 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" size={20} />
+                    </a>
+                </div>
+
+                <figure class="mx-auto w-full max-w-md">
+                    <div class="relative aspect-[3/3] overflow-hidden rounded-lg border border-green-900/20 bg-green-900/5 shadow-lg shadow-green-950/10">
+                        <img
+                            src="/WhatsApp Image 2026-11-03 at 4.51.59 PM.jpeg"
+                            alt="José Miguel frente al mar, con un arcoíris al fondo"
+                            width="4032"
+                            height="3024"
+                            class="h-full w-full object-cover object-[50%_36%]"
+                        />
+                    </div>
+                    <figcaption class="sr-only">José Miguel, autor de Keika Bonsai</figcaption>
+                </figure>
+            </div>
+        </section>
 </BaseLayout>

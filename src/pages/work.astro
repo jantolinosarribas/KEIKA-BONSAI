@@ -1,8 +1,10 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Title from "../components/Title";
+import PlantInventory from "../components/PlantInventory";
 ---
 
 <BaseLayout>
-    <Title title={'work'}/>
+    <Title title={'MIS ARBOLES'}/>
+    <PlantInventory client:load />
 </BaseLayout>
