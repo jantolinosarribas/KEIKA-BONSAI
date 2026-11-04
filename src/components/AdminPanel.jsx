@@ -115,14 +115,15 @@ export default function AdminPanel() {
   async function sendLink(event) {
     event.preventDefault();
     clearFeedback(); setBusy(true);
+    const responseMessage = "Si el correo tiene acceso, recibir\u00e1s un enlace para iniciar sesi\u00f3n.";
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/admin` },
       });
       if (error) throw error;
-      setMessage("Si el correo est\u00e1 autorizado, recibir\u00e1s un enlace de acceso.");
-    } catch { setFailure("No se pudo enviar el enlace. Comprueba el correo o int\u00e9ntalo m\u00e1s tarde."); }
+      setMessage(responseMessage);
+    } catch { setMessage(responseMessage); }
     finally { setBusy(false); }
   }
 
