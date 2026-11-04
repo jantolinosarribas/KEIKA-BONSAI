@@ -2,9 +2,14 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Title from "../components/Title";
 import WorkJournal from "../components/WorkJournal";
+import { getContent } from "../lib/content";
+
+export const prerender = false;
+const { plants, journalEntries } = await getContent();
+Astro.response.headers.set("Cache-Control", "no-store");
 ---
 
 <BaseLayout>
   <Title title={'BLOG'} />
-  <WorkJournal client:load />
+  <WorkJournal plants={plants} journalEntries={journalEntries} client:load />
 </BaseLayout>

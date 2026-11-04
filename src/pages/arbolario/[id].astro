@@ -1,18 +1,15 @@
 ---
-import type { GetStaticPaths } from "astro";
 import { ArrowLeft, Sprout, ZoomIn } from "lucide-react";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import WorkJournal from "../../components/WorkJournal";
-import { categories, plants } from "../../data/plants";
+import { categories } from "../../data/plants";
+import { getContent } from "../../lib/content";
 
-export const getStaticPaths = (() => {
-  return plants.map((plant) => ({
-    params: { id: plant.id },
-    props: { plant },
-  }));
-}) satisfies GetStaticPaths;
-
-const { plant } = Astro.props;
+export const prerender = false;
+const { plants, journalEntries } = await getContent();
+const plant = plants.find((item) => item.id === Astro.params.id);
+if (!plant) return new Response("Ejemplar no encontrado", { status: 404 });
+Astro.response.headers.set("Cache-Control", "no-store");
 const category = categories.find((category) => category.id === plant.category);
 const description = plant.description?.trim();
 const details = [
@@ -94,7 +91,7 @@ const details = [
 
     <section id="diario" aria-labelledby="plant-journal" class="mt-14 scroll-mt-24 border-t border-green-900/20 pt-8">
       <h2 id="plant-journal" class="text-2xl text-green-950">Diario de este árbol</h2>
-      <WorkJournal plantId={plant.id} embedded />
+      <WorkJournal plants={plants} journalEntries={journalEntries} plantId={plant.id} embedded />
     </section>
   </div>
 </BaseLayout>

@@ -1,8 +1,8 @@
 import { useRef, useState } from "react";
 import { ChevronDown, Sprout, ZoomIn } from "lucide-react";
-import { categories, plants } from "../data/plants";
+import { categories, plants as initialPlants } from "../data/plants";
 
-export default function PlantInventory() {
+export default function PlantInventory({ plants = initialPlants }) {
   const [activeCategory, setActiveCategory] = useState(categories[0].id);
   const tabRefs = useRef([]);
   const activeCategoryIndex = categories.findIndex(

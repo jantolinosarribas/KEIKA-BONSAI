@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import AdminPanel from "../components/AdminPanel";
+
+export const prerender = false;
+Astro.response.headers.set("Cache-Control", "no-store");
+Astro.response.headers.set("Referrer-Policy", "no-referrer");
+---
+
+<BaseLayout title="Administracion | KeikaBonsai" noindex>
+  <div class="mx-auto mt-20 max-w-6xl px-6 pt-8 pb-24 md:px-10">
+    <h1 class="text-3xl text-green-950">Administraci&oacute;n</h1>
+    <AdminPanel client:only="react">
+      <p slot="fallback" class="mt-6 text-green-900" role="status">Cargando...</p>
+    </AdminPanel>
+  </div>
+</BaseLayout>

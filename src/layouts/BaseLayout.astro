@@ -4,7 +4,7 @@ import Header from "../components/Header";
 import ImageViewer from "../components/ImageViewer.astro";
 import { ClientRouter } from "astro:transitions";
 
-const { title = "KeikaBonsai" } = Astro.props;
+const { title = "KeikaBonsai", noindex = false } = Astro.props;
 ---
 
 <html lang="es" style="background-color: var(--color-green-100, #dcfce7);" transition:animate="none">
@@ -12,6 +12,7 @@ const { title = "KeikaBonsai" } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <script is:inline data-astro-rerun>
       (() => {
         const introKey = "keikabonsai-home-intro-played";

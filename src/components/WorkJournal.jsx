@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { ZoomIn } from "lucide-react";
-import { plants } from "../data/plants";
-import { journalEntries } from "../data/journalEntries";
+import { plants as initialPlants } from "../data/plants";
+import { journalEntries as initialEntries } from "../data/journalEntries";
 
 const categories = [
   { id: "prebonsais", label: "Prebonsais", singular: "prebonsáis" },
   { id: "bonsais", label: "Bonsais", singular: "bonsáis" },
 ];
 
-export default function WorkJournal({ plantId, embedded = false }) {
+export default function WorkJournal({ plantId = "", embedded = false, plants = initialPlants, journalEntries = initialEntries }) {
   const [activeCategory, setActiveCategory] = useState(
     plants.find((plant) => plant.id === journalEntries[0]?.plantId)?.category ?? categories[0].id,
   );
