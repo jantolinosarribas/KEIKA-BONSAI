@@ -12,15 +12,21 @@ export default function PlantPhotoGallery({ photos = [], plantName, variant = "c
   const isPhotoLoading = Boolean(currentPhoto) && loadedPhotoSrc !== currentPhoto.src;
   const frameSize = isDetail
     ? currentPhoto ? "max-h-[70vh]" : "aspect-[4/3]"
-    : isPhotoLoading || !currentPhoto ? "aspect-[4/3]" : "h-auto";
+    : "aspect-square";
   const imageSize = isDetail
     ? "block h-auto max-h-[70vh] w-auto max-w-full object-contain"
-    : isPhotoLoading ? "size-full object-contain" : "block h-auto w-full object-contain";
+    : "size-full object-cover";
 
   function movePhoto(event, direction) {
     event.preventDefault();
     event.stopPropagation();
     setActiveIndex((index) => (index + direction + photos.length) % photos.length);
+  }
+
+  function selectPhoto(event, index) {
+    event.preventDefault();
+    event.stopPropagation();
+    setActiveIndex(index);
   }
 
   return (
@@ -31,6 +37,7 @@ export default function PlantPhotoGallery({ photos = [], plantName, variant = "c
       >
         {currentPhoto ? (
           <FadeInImage
+            key={`${currentPhoto.src}-${activeIndex}`}
             src={currentPhoto.src}
             alt={currentPhoto.alt || plantName}
             loading={isDetail ? "eager" : "lazy"}
@@ -51,22 +58,19 @@ export default function PlantPhotoGallery({ photos = [], plantName, variant = "c
               onClick={(event) => movePhoto(event, -1)}
               aria-label={`Foto anterior de ${plantName}`}
               title="Foto anterior"
-              className="absolute top-1/2 left-2 z-10 flex size-10 -translate-y-1/2 items-center justify-center rounded bg-black/55 text-white hover:bg-black/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+              className="absolute top-1/2 left-2 z-10 flex size-7 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-black/35 text-white/90 shadow-sm backdrop-blur-md transition-colors hover:bg-black/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
             >
-              <ChevronLeft size={22} aria-hidden="true" />
+              <ChevronLeft size={16} aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={(event) => movePhoto(event, 1)}
               aria-label={`Foto siguiente de ${plantName}`}
               title="Foto siguiente"
-              className="absolute top-1/2 right-2 z-10 flex size-10 -translate-y-1/2 items-center justify-center rounded bg-black/55 text-white hover:bg-black/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+              className="absolute top-1/2 right-2 z-10 flex size-7 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-black/35 text-white/90 shadow-sm backdrop-blur-md transition-colors hover:bg-black/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
             >
-              <ChevronRight size={22} aria-hidden="true" />
+              <ChevronRight size={16} aria-hidden="true" />
             </button>
-            <span aria-live="polite" aria-atomic="true" className="absolute bottom-2 left-2 rounded bg-black/55 px-2 py-1 text-xs text-white">
-              {activeIndex + 1} / {photos.length}
-            </span>
           </>
         )}
 
@@ -90,6 +94,22 @@ export default function PlantPhotoGallery({ photos = [], plantName, variant = "c
           </button>
         )}
       </div>
+      {photos.length > 1 && (
+        <div role="group" aria-label={`Seleccionar foto de ${plantName}`} className="mt-4 flex items-center justify-center gap-1">
+          {photos.map((photo, index) => (
+            <button
+              key={`${photo.src}-${index}`}
+              type="button"
+              onClick={(event) => selectPhoto(event, index)}
+              aria-label={`Mostrar foto ${index + 1} de ${photos.length}`}
+              aria-pressed={activeIndex === index}
+              className="group flex size-3 shrink-0 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-700"
+            >
+              <span className={`rounded-full transition-all duration-300 ${activeIndex === index ? "size-1.5 bg-green-900" : "size-1 bg-green-900/35 group-hover:bg-green-900/70"}`} />
+            </button>
+          ))}
+        </div>
+      )}
       {isDetail && currentPhoto && (
         <figcaption className="mt-3 text-center text-sm text-green-800">
           <time dateTime={currentPhoto.date || undefined}>{formatPlantPhotoDate(currentPhoto.date)}</time>
