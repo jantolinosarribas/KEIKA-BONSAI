@@ -202,6 +202,36 @@ html.nav-over-dark .site-header .mobile-menu-toggle {
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
+.plant-photo-frame[data-loading="true"]::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(108deg, transparent 20%, rgb(255 255 255 / 55%) 48%, transparent 76%);
+  content: "";
+  pointer-events: none;
+  animation: plant-photo-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes plant-photo-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+html[data-theme="dark"] .plant-photo-frame[data-loading="true"]::after {
+  background: linear-gradient(108deg, transparent 20%, rgb(255 255 255 / 16%) 48%, transparent 76%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plant-photo-frame[data-loading="true"]::after {
+    animation: none;
+    opacity: 0.3;
+  }
+}
+
 .site-header,
 .projects-section {
   transition: background-color 240ms ease, color 240ms ease;
@@ -237,6 +267,15 @@ html[data-theme="dark"] .site-header #mobile-navigation a {
 }
 
 html[data-theme="dark"] button.bg-green-800 {
+  background-color: #2d6239;
+}
+
+html[data-theme="dark"] .about-contact-link {
+  background-color: #244b30;
+  color: #f0fdf4;
+}
+
+html[data-theme="dark"] .about-contact-link:hover {
   background-color: #2d6239;
 }
 

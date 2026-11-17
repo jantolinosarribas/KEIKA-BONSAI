@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import WorkJournal from "../../components/WorkJournal";
 import PlantPhotoGallery from "../../components/PlantPhotoGallery";
-import { categories, getPlantPhotos } from "../../data/plants";
+import { categories, getPlantOwnerLabel, getPlantPhotos } from "../../data/plants";
 import { getContent } from "../../lib/content";
 
 export const prerender = false;
@@ -38,6 +38,7 @@ const details = [
       <p class="text-sm text-green-700">{category?.label}</p>
       <h1 class="mt-2 break-words text-3xl text-green-950 md:text-4xl">{plant.commonName}</h1>
       <p class="mt-2 text-lg italic text-green-900/70">{plant.scientificName}</p>
+      <p class="mt-2 text-sm text-green-800">Propietario: {getPlantOwnerLabel(plant.owner)}</p>
     </header>
 
     <div class="grid items-start gap-8 md:grid-cols-2 md:gap-12">

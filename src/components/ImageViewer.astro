@@ -39,7 +39,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
       <ChevronRight size={24} aria-hidden="true" />
     </button>
     <figure class="flex max-h-full min-h-0 max-w-full flex-col items-center gap-3">
-      <img data-image-viewer-image alt="" class="min-h-0 max-w-full object-contain" />
+      <img data-image-viewer-image alt="" class="min-h-0 max-w-full object-contain opacity-0 transition-opacity duration-500 motion-reduce:transition-none" />
       <figcaption data-image-viewer-caption class="shrink-0 text-center text-sm"></figcaption>
     </figure>
   </div>
@@ -64,7 +64,12 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
     const position = dialog?.querySelector<HTMLElement>("[data-image-viewer-position]");
     if (!dialog || !image || !caption || !position) return;
 
+    image.classList.add("opacity-0");
+    const revealImage = () => requestAnimationFrame(() => image.classList.remove("opacity-0"));
+    image.onload = revealImage;
+    image.onerror = revealImage;
     image.src = photo.src;
+    if (image.complete && image.naturalWidth > 0) revealImage();
     image.alt = photo.alt;
     caption.textContent = photo.dateLabel ? `${photo.alt} · ${photo.dateLabel}` : photo.alt;
     position.textContent = `${activePhotoIndex + 1} / ${galleryPhotos.length}`;

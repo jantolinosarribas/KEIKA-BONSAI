@@ -6,8 +6,16 @@ import FadeInImage from "./FadeInImage";
 /** @param {{ photos?: import("../data/plants").PlantPhoto[], plantName: string, variant?: "card" | "detail" }} props */
 export default function PlantPhotoGallery({ photos = [], plantName, variant = "card" }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [loadedPhotoSrc, setLoadedPhotoSrc] = useState(null);
   const isDetail = variant === "detail";
   const currentPhoto = photos[activeIndex];
+  const isPhotoLoading = Boolean(currentPhoto) && loadedPhotoSrc !== currentPhoto.src;
+  const frameSize = isDetail
+    ? currentPhoto ? "max-h-[70vh]" : "aspect-[4/3]"
+    : isPhotoLoading || !currentPhoto ? "aspect-[4/3]" : "h-auto";
+  const imageSize = isDetail
+    ? "block h-auto max-h-[70vh] w-auto max-w-full object-contain"
+    : isPhotoLoading ? "size-full object-contain" : "block h-auto w-full object-contain";
 
   function movePhoto(event, direction) {
     event.preventDefault();
@@ -16,14 +24,18 @@ export default function PlantPhotoGallery({ photos = [], plantName, variant = "c
   }
 
   return (
-    <figure className={isDetail ? "min-w-0" : "min-w-0"}>
-      <div className={`relative overflow-hidden bg-green-900/5 ${isDetail ? "flex aspect-[4/3] items-center justify-center" : "aspect-[4/3]"}`}>
+    <figure className="min-w-0">
+      <div
+        data-loading={!isDetail && isPhotoLoading ? "true" : undefined}
+        className={`plant-photo-frame relative flex w-full items-center justify-center overflow-hidden bg-green-900/5 ${frameSize}`}
+      >
         {currentPhoto ? (
           <FadeInImage
             src={currentPhoto.src}
             alt={currentPhoto.alt || plantName}
             loading={isDetail ? "eager" : "lazy"}
-            className={`size-full ${isDetail ? "object-contain" : "object-cover transition-transform duration-300 hover:scale-[1.03]"}`}
+            onLoaded={setLoadedPhotoSrc}
+            className={imageSize}
           />
         ) : (
           <div className="flex size-full flex-col items-center justify-center gap-3 text-green-900/45">

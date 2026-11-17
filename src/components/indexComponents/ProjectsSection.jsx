@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import FadeInImage from "../FadeInImage";
 import { getPlantPhotos } from "../../data/plants";
 import { supabase } from "../../lib/supabase";
 
@@ -102,12 +103,13 @@ export default function ProjectsSection() {
                 <div className="-ml-4 flex items-center touch-pan-y">
                   {photos.map((photo, photoIndex) => (
                     <div key={photo.src} className="min-w-0 flex-[0_0_auto] pl-4" role="group" aria-label={`${photoIndex + 1} de ${photos.length}`} aria-roledescription="diapositiva">
-                      <div className="relative aspect-[4/3] h-[68vh] min-h-80 max-h-[560px] w-[min(88vw,48rem)] overflow-hidden">
-                        <img
+                      <div className="relative flex h-[68vh] min-h-80 max-h-[560px] w-fit max-w-[88vw] items-center justify-center overflow-hidden">
+                        <FadeInImage
                           src={photo.src}
                           alt={photo.alt}
-                          className={`size-full object-cover transition-opacity duration-300 ${activePhotoIndex === photoIndex ? "opacity-100" : "opacity-45"}`}
+                          className="h-auto w-auto max-h-full max-w-full object-contain"
                           loading={photoIndex === activePhotoIndex ? "eager" : "lazy"}
+                          isVisible={activePhotoIndex === photoIndex}
                           draggable="false"
                         />
                       </div>
@@ -122,13 +124,6 @@ export default function ProjectsSection() {
                   <span className="block text-sm text-stone-400">{activePhotoIndex + 1} / {photos.length}</span>
                 </span>
                 <button type="button" onClick={() => emblaApi?.scrollNext()} className="flex size-11 shrink-0 items-center justify-center rounded-full border border-stone-400 text-3xl leading-none transition-colors duration-200 hover:border-green-500 hover:bg-green-500 hover:text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-400" aria-label="Mostrar foto siguiente" title="Foto siguiente">›</button>
-              </div>
-              <div className="mt-5 flex gap-3 overflow-x-auto px-1 py-2 md:justify-center">
-                {photos.map((photo, photoIndex) => (
-                  <button key={photo.src} type="button" onClick={() => emblaApi?.scrollTo(photoIndex)} className={`size-16 shrink-0 overflow-hidden rounded-sm border transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-400 ${photoIndex === activePhotoIndex ? "border-green-400 opacity-100" : "border-stone-600 opacity-55 hover:opacity-100"}`} aria-label={`Mostrar ${photo.label}`} aria-pressed={photoIndex === activePhotoIndex} title={photo.label}>
-                    <img src={photo.src} alt="" className="size-full object-cover" loading="lazy" />
-                  </button>
-                ))}
               </div>
             </div>
           ) : (

@@ -3,6 +3,21 @@ export const categories = [
   { id: "bonsais", label: "Bonsáis" },
 ];
 
+export const plantOwners = [
+  { id: "jose-miguel", label: "José Miguel" },
+  { id: "antonio", label: "Antonio" },
+] as const;
+
+export type PlantOwner = (typeof plantOwners)[number]["id"];
+
+export function getPlantOwnerId(owner?: string | null): PlantOwner {
+  return plantOwners.find((item) => item.id === owner)?.id ?? "jose-miguel";
+}
+
+export function getPlantOwnerLabel(owner?: string | null): string {
+  return plantOwners.find((item) => item.id === getPlantOwnerId(owner))?.label ?? "José Miguel";
+}
+
 export interface PlantPhoto {
   src: string;
   alt: string;
@@ -14,6 +29,7 @@ export interface Plant {
   category: string;
   commonName: string;
   scientificName: string;
+  owner?: PlantOwner;
   image?: string;
   photos?: PlantPhoto[];
   description?: string;
@@ -62,65 +78,76 @@ export const plants: Plant[] = [
     category: "prebonsais",
     commonName: "Pino negro japonés",
     scientificName: "Pinus thunbergii",
+    owner: "jose-miguel",
   },
   {
     id: "higuera-001",
     category: "prebonsais",
     commonName: "Higuera",
     scientificName: "Ficus carica",
+    owner: "jose-miguel",
   },
   {
     id: "granado-001",
     category: "prebonsais",
     commonName: "Granado",
     scientificName: "Punica granatum",
+    owner: "jose-miguel",
   },
   {
     id: "aguacate-001",
     category: "prebonsais",
     commonName: "Aguacate",
     scientificName: "Persea americana",
+    owner: "jose-miguel",
   },
   {
     id: "olivo-001",
     category: "prebonsais",
     commonName: "Olivo",
     scientificName: "Olea europaea",
+    owner: "jose-miguel",
   },
   {
     id: "falso-cipres-001",
     category: "prebonsais",
     commonName: "Falso ciprés",
     scientificName: "Chamaecyparis sp.",
+    owner: "jose-miguel",
   },
   {
     id: "arce-japones-001",
     category: "prebonsais",
     commonName: "Arce japonés",
     scientificName: "Acer palmatum",
+    owner: "jose-miguel",
   },
   {
     id: "acebuche-001",
     category: "bonsais",
     commonName: "Acebuche",
     scientificName: "Olea europaea var. sylvestris",
+    owner: "jose-miguel",
   },
   {
     id: "ginkgo-001",
     category: "bonsais",
     commonName: "Ginkgo",
     scientificName: "Ginkgo biloba",
+    owner: "jose-miguel",
   },
   {
     id: "olmo-chino-001",
     category: "bonsais",
     commonName: "Olmo chino",
     scientificName: "Ulmus parvifolia",
+    owner: "jose-miguel",
   },
   {
     id: "enebro-rastrero-japones-001",
     category: "bonsais",
     commonName: "Enebro rastrero japonés",
     scientificName: "Juniperus procumbens 'Nana'",
+    owner: "jose-miguel",
   },
 ];

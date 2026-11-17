@@ -59,6 +59,7 @@ test("Supabase schema protects content and photos", async () => {
     `);
     await db.exec(await readFile(new URL("../supabase/schema.sql", import.meta.url), "utf8"));
     await db.exec(await readFile(new URL("../supabase/migrations/20261117_import_initial_content_photos.sql", import.meta.url), "utf8"));
+    await db.exec(await readFile(new URL("../supabase/migrations/20261117_plant_owners.sql", import.meta.url), "utf8"));
     await db.exec(`
       insert into auth.users values ('11111111-1111-4111-8111-111111111111'),
         ('22222222-2222-4222-8222-222222222222');
@@ -79,13 +80,14 @@ test("Supabase schema protects content and photos", async () => {
     await assert.rejects(db.exec("insert into storage.objects values ('forbidden', 'plant-photos', 'test.jpg')"));
     await db.exec("set request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111'");
     assert.equal((await db.query("select public.is_admin() as allowed")).rows[0].allowed, true);
-    const plant = { id: "test-tree", category: "bonsais", commonName: "Test", scientificName: "Test species" };
+    const plant = { id: "test-tree", category: "bonsais", owner: "antonio", commonName: "Test", scientificName: "Test species" };
     const entry = { id: "test-entry", plantId: plant.id, date: "2026-11-04", title: "Test", description: "Notes" };
     await assert.rejects(db.query("select public.import_initial_content($1, $2)", [
       JSON.stringify([plant]), JSON.stringify([{ ...entry, plantId: "missing" }]),
     ]));
     assert.equal((await db.query("select count(*)::int as count from public.plants")).rows[0].count, 0);
     await db.query("select public.import_initial_content($1, $2)", [JSON.stringify([plant]), JSON.stringify([entry])]);
+    assert.equal((await db.query("select owner from public.plants where id = 'test-tree'")).rows[0].owner, "antonio");
     await assert.rejects(db.query("select public.import_initial_content($1, $2)", [JSON.stringify([plant]), "[]"]));
     await db.exec(`update public.plants set "commonName" = 'Edited' where id = 'test-tree';
       insert into storage.objects values ('photo', 'plant-photos', 'test.jpg')`);
@@ -108,6 +110,7 @@ test("Supabase schema protects content and photos", async () => {
     ]);
     assert.equal((await db.query("select * from public.plants")).rows.length, plants.length);
     assert.equal((await db.query("select * from public.journal_entries")).rows.length, journalEntries.length);
+    assert.equal((await db.query("select count(*)::int as count from public.plants where owner = 'jose-miguel'")).rows[0].count, plants.length);
   } finally {
     await db.close();
   }

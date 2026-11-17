@@ -26,12 +26,13 @@ Para un proyecto Supabase ya existente, ejecuta estas migraciones en orden y una
 
 1. [`20261117_plant_photo_galleries.sql`](supabase/migrations/20261117_plant_photo_galleries.sql) añade la galería de fotos y conserva las imágenes actuales como primera foto, sin inventar una fecha.
 2. [`20261117_import_initial_content_photos.sql`](supabase/migrations/20261117_import_initial_content_photos.sql) actualiza el importador para que también admita galerías.
+3. [`20261117_plant_owners.sql`](supabase/migrations/20261117_plant_owners.sql) añade el propietario y asigna las plantas actuales a José Miguel.
 
-Si ya ejecutaste la primera, ejecuta solo la segunda. Para un proyecto nuevo,
-`schema.sql` ya contiene ambos cambios.
+Ejecuta solo las migraciones que aún no hayas aplicado, en orden. Para un proyecto nuevo,
+`schema.sql` ya contiene estos cambios.
 
-3. Crea un proyecto en Supabase y guarda sus credenciales en tu gestor de claves.
-4. Ejecuta [supabase/schema.sql](supabase/schema.sql) en SQL Editor **una sola
+1. Crea un proyecto en Supabase y guarda sus credenciales en tu gestor de claves.
+2. Ejecuta [supabase/schema.sql](supabase/schema.sql) en SQL Editor **una sola
 	vez**, en un proyecto nuevo. Crea tablas, politicas RLS y el bucket publico
 	`plant-photos`.
 3. En Authentication > Providers > Email, activa Email y desactiva el registro

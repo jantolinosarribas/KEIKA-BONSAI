@@ -1,16 +1,18 @@
 import { useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { categories, getPlantPhotos, plants as initialPlants } from "../data/plants";
+import { categories, getPlantOwnerId, getPlantOwnerLabel, getPlantPhotos, plantOwners, plants as initialPlants } from "../data/plants";
 import PlantPhotoGallery from "./PlantPhotoGallery";
 
 export default function PlantInventory({ plants = initialPlants }) {
   const [activeCategory, setActiveCategory] = useState(categories[0].id);
+  const [activeOwner, setActiveOwner] = useState("all");
   const tabRefs = useRef([]);
   const activeCategoryIndex = categories.findIndex(
     (category) => category.id === activeCategory,
   );
   const visiblePlants = plants.filter(
-    (plant) => plant.category === activeCategory,
+    (plant) => plant.category === activeCategory
+      && (activeOwner === "all" || getPlantOwnerId(plant.owner) === activeOwner),
   );
 
   function handleTabKeyDown(event, currentIndex) {
@@ -36,37 +38,45 @@ export default function PlantInventory({ plants = initialPlants }) {
   return (
     <section className="w-full px-6 pb-32 md:px-10">
       <div className="mx-auto max-w-6xl">
-        <div
-          className="flex gap-7 border-b border-green-900/20"
-          role="tablist"
-          aria-label="Filtrar árboles por tipo"
-        >
-          {categories.map((category, index) => {
-            const isSelected = category.id === activeCategory;
-            const count = plants.filter(
-              (plant) => plant.category === category.id,
-            ).length;
+        <div className="flex flex-wrap items-end justify-between gap-5 border-b border-green-900/20">
+          <div className="flex gap-7" role="tablist" aria-label="Filtrar árboles por tipo">
+            {categories.map((category, index) => {
+              const isSelected = category.id === activeCategory;
+              const count = plants.filter((plant) => plant.category === category.id
+                && (activeOwner === "all" || getPlantOwnerId(plant.owner) === activeOwner)).length;
 
-            return (
-              <button
-                key={category.id}
-                ref={(element) => {
-                  tabRefs.current[index] = element;
-                }}
-                id={`inventory-tab-${category.id}`}
-                type="button"
-                role="tab"
-                aria-selected={isSelected}
-                aria-controls={`inventory-panel-${category.id}`}
-                tabIndex={isSelected ? 0 : -1}
-                onClick={() => setActiveCategory(category.id)}
-                onKeyDown={(event) => handleTabKeyDown(event, index)}
-                className={`border-b-2 px-1 pb-3 text-lg transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-700 ${isSelected ? "border-green-800 text-green-900" : "border-transparent text-green-900/55 hover:text-green-800"}`}
-              >
-                {category.label} <span className="text-sm">{count}</span>
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={category.id}
+                  ref={(element) => {
+                    tabRefs.current[index] = element;
+                  }}
+                  id={`inventory-tab-${category.id}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={isSelected}
+                  aria-controls={`inventory-panel-${category.id}`}
+                  tabIndex={isSelected ? 0 : -1}
+                  onClick={() => setActiveCategory(category.id)}
+                  onKeyDown={(event) => handleTabKeyDown(event, index)}
+                  className={`border-b-2 px-1 pb-3 text-lg transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-700 ${isSelected ? "border-green-800 text-green-900" : "border-transparent text-green-900/55 hover:text-green-800"}`}
+                >
+                  {category.label} <span className="text-sm">{count}</span>
+                </button>
+              );
+            })}
+          </div>
+          <label className="mb-2 flex items-center gap-3 text-sm text-green-900">
+            <span>Propietario</span>
+            <select
+              value={activeOwner}
+              onChange={(event) => setActiveOwner(event.target.value)}
+              className="min-h-10 rounded border border-green-900/25 bg-white/70 px-3 text-base text-green-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-700"
+            >
+              <option value="all">Todos</option>
+              {plantOwners.map((owner) => <option key={owner.id} value={owner.id}>{owner.label}</option>)}
+            </select>
+          </label>
         </div>
 
         <div
@@ -97,6 +107,9 @@ export default function PlantInventory({ plants = initialPlants }) {
                       </a>
                       <span className="mt-1 block text-sm italic text-green-900/70">
                         {plant.scientificName}
+                      </span>
+                      <span className="mt-2 block text-xs text-green-800">
+                        Propietario: {getPlantOwnerLabel(plant.owner)}
                       </span>
                     </span>
                     <ChevronDown

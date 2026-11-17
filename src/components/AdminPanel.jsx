@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { ArrowUpRight, Download, LogOut, Mail, Plus, Save, Trash2, Upload, X } from "lucide-react";
-import { categories, getPlantPhotos, plants as initialPlants } from "../data/plants";
+import { categories, getPlantOwnerId, getPlantPhotos, plantOwners, plants as initialPlants } from "../data/plants";
 import { journalEntries as initialEntries } from "../data/journalEntries";
 import { hasPartialConfiguration, supabase } from "../lib/supabase";
+import FadeInImage from "./FadeInImage";
 
 const inputClass = "mt-1 w-full min-w-0 rounded border border-green-900/30 bg-white/70 px-3 py-2 text-base text-green-950 focus:outline-2 focus:outline-green-700 disabled:opacity-60";
 const buttonClass = "inline-flex min-h-11 items-center justify-center gap-2 rounded border border-green-900/30 px-3 py-2 text-sm text-green-950 hover:bg-white/50 focus-visible:outline-2 focus-visible:outline-green-700 disabled:cursor-not-allowed disabled:opacity-50";
@@ -146,7 +147,7 @@ export default function AdminPanel() {
   function editRecord(record) {
     if (!canDiscard()) return;
     const editableRecord = tab === "plants"
-      ? { ...record, photos: getPlantPhotos(record).map((photo) => ({ ...photo, date: photo.date ?? "" })) }
+      ? { ...record, owner: getPlantOwnerId(record.owner), photos: getPlantPhotos(record).map((photo) => ({ ...photo, date: photo.date ?? "" })) }
       : { ...record };
     clearFeedback(); setDraft(editableRecord); setIsNew(false); setDirty(false);
   }
@@ -155,7 +156,7 @@ export default function AdminPanel() {
     if (!canDiscard()) return;
     clearFeedback(); setIsNew(true); setDirty(false);
     setDraft(tab === "plants" ? {
-      id: `arbol-${crypto.randomUUID()}`, category: "prebonsais", commonName: "", scientificName: "", description: "", image: null, photos: [],
+      id: `arbol-${crypto.randomUUID()}`, category: "prebonsais", owner: "jose-miguel", commonName: "", scientificName: "", description: "", image: null, photos: [],
     } : {
       id: `entrada-${crypto.randomUUID()}`, plantId: records.plants[0]?.id ?? "",
       date: new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()),
@@ -168,7 +169,7 @@ export default function AdminPanel() {
     try {
       const payload = tab === "plants"
         ? {
-            ...Object.fromEntries(["id", "category", ...plantFields.map(([name]) => name), "description"]
+            ...Object.fromEntries(["id", "category", "owner", ...plantFields.map(([name]) => name), "description"]
               .map((name) => [name, draft[name]?.trim() || null])),
             image: draft.photos?.[0]?.src || null,
             photos: (draft.photos ?? []).map((photo) => ({
@@ -309,6 +310,7 @@ export default function AdminPanel() {
             <div className="grid gap-4 sm:grid-cols-2">
               {plantFields.map(([name, label, required]) => <Field key={name} label={label}><input name={name} required={required} maxLength={200} value={draft[name] ?? ""} onChange={(event) => changeField(name, event.target.value)} className={inputClass} /></Field>)}
               <Field label="Categor&iacute;a"><select value={draft.category} onChange={(event) => changeField("category", event.target.value)} className={inputClass}>{categories.map((category) => <option key={category.id} value={category.id}>{category.label}</option>)}</select></Field>
+              <Field label="Propietario"><select value={getPlantOwnerId(draft.owner)} onChange={(event) => changeField("owner", event.target.value)} className={inputClass}>{plantOwners.map((owner) => <option key={owner.id} value={owner.id}>{owner.label}</option>)}</select></Field>
             </div>
             <Field label="Descripci&oacute;n"><textarea rows={5} maxLength={20000} value={draft.description ?? ""} onChange={(event) => changeField("description", event.target.value)} className={inputClass} /></Field>
           </> : <>
@@ -325,7 +327,7 @@ export default function AdminPanel() {
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
               {photos.map((photo, index) => <div key={`${photo.src}-${index}`} className="min-w-0">
                 <div className="relative aspect-[4/3] bg-green-900/5">
-                  <img src={photo.src} alt={photo.alt || "Foto"} className="size-full object-contain" />
+                  <FadeInImage src={photo.src} alt={photo.alt || "Foto"} loading="eager" className="size-full object-contain" />
                   <button type="button" title="Quitar foto" aria-label={`Quitar foto ${index + 1}`} onClick={() => changeField("photos", photos.filter((_photo, photoIndex) => photoIndex !== index))} className="absolute top-2 right-2 flex size-11 items-center justify-center rounded bg-white/90 text-red-800 focus-visible:outline-2 focus-visible:outline-red-700"><X size={18} aria-hidden="true" /></button>
                 </div>
                 {tab === "plants" && <Field label={`Fecha de la foto ${index + 1}`}><input type="date" value={photo.date ?? ""} onChange={(event) => changeField("photos", photos.map((current, photoIndex) => photoIndex === index ? { ...current, date: event.target.value } : current))} className={inputClass} /></Field>}

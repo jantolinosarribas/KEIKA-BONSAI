@@ -22,6 +22,7 @@ grant execute on function public.is_admin() to anon, authenticated;
 create table public.plants (
   id text primary key check (id ~ '^[a-z0-9][a-z0-9-]{0,99}$'),
   category text not null check (category in ('prebonsais', 'bonsais')),
+  owner text not null default 'jose-miguel' check (owner in ('jose-miguel', 'antonio')),
   "commonName" text not null check (length(trim("commonName")) between 1 and 200),
   "scientificName" text not null check (length(trim("scientificName")) between 1 and 200),
   image text,
@@ -84,9 +85,9 @@ begin
     raise exception 'La importacion requiere las dos tablas vacias.';
   end if;
   insert into public.plants
-    (id, category, "commonName", "scientificName", image, photos, description,
+    (id, category, owner, "commonName", "scientificName", image, photos, description,
       age, "cultivationTime", origin, location, substrate, "futureDesign")
-    select plant.id, plant.category, plant."commonName", plant."scientificName",
+    select plant.id, plant.category, coalesce(plant.owner, 'jose-miguel'), plant."commonName", plant."scientificName",
       plant.image,
       coalesce(plant.photos, case when plant.image is null then '[]'::jsonb
         else jsonb_build_array(jsonb_build_object('src', plant.image, 'alt', plant."commonName", 'date', null)) end),
