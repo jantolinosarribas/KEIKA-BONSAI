@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ZoomIn } from "lucide-react";
 import { plants as initialPlants } from "../data/plants";
 import { journalEntries as initialEntries } from "../data/journalEntries";
+import { FadeInImage } from "./FadeInImage";
 
 const categories = [
   { id: "prebonsais", label: "Prebonsais", singular: "prebonsáis" },
@@ -9,9 +10,7 @@ const categories = [
 ];
 
 export default function WorkJournal({ plantId = "", embedded = false, plants = initialPlants, journalEntries = initialEntries }) {
-  const [activeCategory, setActiveCategory] = useState(
-    plants.find((plant) => plant.id === journalEntries[0]?.plantId)?.category ?? categories[0].id,
-  );
+  const [activeCategory, setActiveCategory] = useState(categories[0].id);
   const tabRefs = useRef([]);
   const selectedPlant = plants.find((plant) => plant.id === plantId);
 
@@ -25,11 +24,8 @@ export default function WorkJournal({ plantId = "", embedded = false, plants = i
     }
   }, []);
 
-  const activeCategoryIndex = categories.findIndex(
-    (category) => category.id === activeCategory,
-  );
-  const activeCategoryData = categories[activeCategoryIndex];
   const entries = journalEntries
+    .filter((entry) => !entry.isMock)
     .filter((entry) => {
       const plant = plants.find((plant) => plant.id === entry.plantId);
       return selectedPlant
@@ -110,7 +106,6 @@ export default function WorkJournal({ plantId = "", embedded = false, plants = i
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-green-700">
                           <time dateTime={entry.date}>{entry.dateLabel}</time>
-                          {entry.isMock && <span className="text-green-900/60">Entrada de ejemplo</span>}
                         </div>
                         <p className="mt-2 text-lg text-green-900">
                           <a
@@ -155,11 +150,10 @@ export default function WorkJournal({ plantId = "", embedded = false, plants = i
                                 title={showMore ? "Ver todas las fotos" : "Ampliar foto"}
                                 className="relative aspect-[4/3] w-full overflow-hidden bg-green-900/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700"
                               >
-                                <img
+                                <FadeInImage
                                   src={photo.src}
                                   alt={photo.alt}
                                   className={`size-full object-cover ${showMore ? "scale-105 blur-sm" : ""}`}
-                                  loading="lazy"
                                 />
                                 {showMore ? (
                                   <span className="absolute inset-0 flex items-center justify-center bg-black/40 px-2 text-center text-lg text-white">
@@ -181,26 +175,9 @@ export default function WorkJournal({ plantId = "", embedded = false, plants = i
               })}
             </ol>
           ) : (
-            <div className="min-h-72 border-b border-green-900/15 py-12 md:py-16">
-              <div className="flex max-w-2xl gap-5">
-                <span
-                  aria-hidden="true"
-                  className="mt-2 size-2 shrink-0 rounded-full bg-green-800"
-                />
-                <div>
-                  <p className="text-sm text-green-700">
-                    Diario de {selectedPlant ? selectedPlant.commonName : activeCategoryData.singular}
-                  </p>
-                  <h2 className="mt-2 text-2xl text-green-950">
-                    Las primeras notas están por venir
-                  </h2>
-                  <p className="mt-3 leading-relaxed text-green-900">
-                    Cuando documente una sesión{selectedPlant ? " de este árbol" : ""}, aparecerá aquí con su fecha,
-                    el trabajo realizado y las fotos del proceso.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <p role="status" className="mt-6 border-b border-green-900/15 py-6 text-sm text-green-800">
+              No hay notas todavía.
+            </p>
           )}
         </div>
       </div>

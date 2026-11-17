@@ -1,8 +1,9 @@
 ---
-import { ArrowLeft, Sprout, ZoomIn } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import WorkJournal from "../../components/WorkJournal";
-import { categories } from "../../data/plants";
+import PlantPhotoGallery from "../../components/PlantPhotoGallery";
+import { categories, getPlantPhotos } from "../../data/plants";
 import { getContent } from "../../lib/content";
 
 export const prerender = false;
@@ -11,6 +12,7 @@ const plant = plants.find((item) => item.id === Astro.params.id);
 if (!plant) return new Response("Ejemplar no encontrado", { status: 404 });
 Astro.response.headers.set("Cache-Control", "no-store");
 const category = categories.find((category) => category.id === plant.category);
+const plantPhotos = getPlantPhotos(plant);
 const description = plant.description?.trim();
 const details = [
   ["Edad", plant.age ?? "Por documentar"],
@@ -39,35 +41,7 @@ const details = [
     </header>
 
     <div class="grid items-start gap-8 md:grid-cols-2 md:gap-12">
-      <div class="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-green-900/5">
-        {plant.image ? (
-          <>
-            <img
-              src={plant.image}
-              alt={plant.commonName}
-              class="size-full object-contain"
-              fetchpriority="high"
-            />
-            <button
-              type="button"
-              data-image-viewer
-              data-image-src={plant.image}
-              data-image-alt={plant.commonName}
-              aria-haspopup="dialog"
-              aria-label={`Ampliar foto de ${plant.commonName}`}
-              title={`Ampliar foto de ${plant.commonName}`}
-              class="absolute right-3 bottom-3 flex size-11 items-center justify-center rounded bg-black/55 text-white hover:bg-black/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-            >
-              <ZoomIn size={18} aria-hidden="true" />
-            </button>
-          </>
-        ) : (
-          <div class="flex flex-col items-center gap-3 text-green-900/45">
-            <Sprout size={40} strokeWidth={1.4} aria-hidden="true" />
-            <span class="text-sm">Foto pendiente</span>
-          </div>
-        )}
-      </div>
+      <PlantPhotoGallery photos={plantPhotos} plantName={plant.commonName} variant="detail" client:load />
 
       <section aria-labelledby="plant-information">
         <h2 id="plant-information" class="text-2xl text-green-950">Ficha del ejemplar</h2>

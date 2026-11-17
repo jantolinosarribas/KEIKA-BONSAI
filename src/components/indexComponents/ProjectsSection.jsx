@@ -1,50 +1,7 @@
 import { useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-
-const photos = [
-  {
-    src: "/WhatsApp%20Image%202026-11-03%20at%2012.28.10%20PM%20(3).jpeg",
-    alt: "Prebonsai de aguacate",
-    label: "Aguacate",
-    width: 3024,
-    height: 4032,
-  },
-  {
-    src: "/WhatsApp%20Image%202026-11-03%20at%2012.28.10%20PM.jpeg",
-    alt: "Prebonsai de pino negro japones",
-    label: "Pino negro japones",
-    width: 3024,
-    height: 4032,
-  },
-  {
-    src: "/WhatsApp%20Image%202026-11-03%20at%2012.28.10%20PM%20(1).jpeg",
-    alt: "Prebonsai de arce japones",
-    label: "Arce japones",
-    width: 3024,
-    height: 4032,
-  },
-  {
-    src: "/WhatsApp%20Image%202026-11-03%20at%2012.28.10%20PM%20(2).jpeg",
-    alt: "Prebonsai de higuera",
-    label: "Higuera",
-    width: 3024,
-    height: 4032,
-  },
-  {
-    src: "/WhatsApp%20Image%202026-11-03%20at%2012.52.23%20PM%20(1).jpeg",
-    alt: "Bonsai de olmo chino",
-    label: "Bonsai Olmo Chino",
-    width: 4032,
-    height: 3024,
-  },
-  {
-    src: "/WhatsApp%20Image%202026-11-03%20at%2012.52.23%20PM.jpeg",
-    alt: "Bonsai de enebro rastrero japones",
-    label: "Bonsai Juniperus Procumbens Nana",
-    width: 3024,
-    height: 4032,
-  }
-];
+import { getPlantPhotos } from "../../data/plants";
+import { supabase } from "../../lib/supabase";
 
 export default function ProjectsSection() {
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -52,11 +9,35 @@ export default function ProjectsSection() {
     loop: true,
     slidesToScroll: 1,
   });
+  const [photos, setPhotos] = useState([]);
+  const [photosLoading, setPhotosLoading] = useState(Boolean(supabase));
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const activePhoto = photos[activePhotoIndex];
 
   useEffect(() => {
-    if (!emblaApi) return;
+    if (!supabase) return;
+    let active = true;
+
+    supabase.from("plants").select("commonName, image, photos").order("commonName")
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (!error) {
+          setPhotos(data.flatMap((plant) => getPlantPhotos(plant).map((photo) => ({
+            ...photo,
+            label: plant.commonName,
+          }))));
+        }
+        setPhotosLoading(false);
+      })
+      .catch(() => {
+        if (active) setPhotosLoading(false);
+      });
+
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!emblaApi || !photos.length) return;
 
     const updateActivePhoto = () => {
       setActivePhotoIndex(emblaApi.selectedScrollSnap());
@@ -70,7 +51,7 @@ export default function ProjectsSection() {
       emblaApi.off("select", updateActivePhoto);
       emblaApi.off("reInit", updateActivePhoto);
     };
-  }, [emblaApi]);
+  }, [emblaApi, photos.length]);
 
   return (
     <section id="projects" className="projects-section relative isolate mt-30 w-full bg-zinc-900 py-32">
@@ -115,87 +96,46 @@ export default function ProjectsSection() {
             Cada ejemplar forma parte de un proceso distinto. Poco a poco iré
             compartiendo su evolución y lo que voy aprendiendo con cada uno.
           </p>
-          <div
-            className="mt-8"
-            role="region"
-            aria-label="Fotos de mis arboles"
-            aria-roledescription="carrusel"
-          >
-            <div className="overflow-hidden" ref={emblaRef}>
-              <div className="-ml-4 flex items-center touch-pan-y">
-                {photos.map((photo, photoIndex) => (
-                  <div
-                    key={photo.src}
-                    className="min-w-0 flex-[0_0_auto] pl-4"
-                    role="group"
-                    aria-label={`${photoIndex + 1} de ${photos.length}`}
-                    aria-roledescription="diapositiva"
-                  >
-                    <div
-                      style={{ aspectRatio: `${photo.width} / ${photo.height}` }}
-                      className="relative h-[68vh] min-h-80 max-h-[560px] w-auto max-w-[120vw] overflow-hidden md:max-w-[88vw]"
-                    >
-                      <img
-                        src={photo.src}
-                        alt={photo.alt}
-                        width={photo.width}
-                        height={photo.height}
-                        className={`size-full object-cover transition-opacity duration-300 ${activePhotoIndex === photoIndex ? "opacity-100" : "opacity-45"}`}
-                        loading={photoIndex === activePhotoIndex ? "eager" : "lazy"}
-                        draggable="false"
-                      />
+          {photos.length > 0 ? (
+            <div className="mt-8" role="region" aria-label="Fotos de mis árboles" aria-roledescription="carrusel">
+              <div className="overflow-hidden" ref={emblaRef}>
+                <div className="-ml-4 flex items-center touch-pan-y">
+                  {photos.map((photo, photoIndex) => (
+                    <div key={photo.src} className="min-w-0 flex-[0_0_auto] pl-4" role="group" aria-label={`${photoIndex + 1} de ${photos.length}`} aria-roledescription="diapositiva">
+                      <div className="relative aspect-[4/3] h-[68vh] min-h-80 max-h-[560px] w-[min(88vw,48rem)] overflow-hidden">
+                        <img
+                          src={photo.src}
+                          alt={photo.alt}
+                          className={`size-full object-cover transition-opacity duration-300 ${activePhotoIndex === photoIndex ? "opacity-100" : "opacity-45"}`}
+                          loading={photoIndex === activePhotoIndex ? "eager" : "lazy"}
+                          draggable="false"
+                        />
+                      </div>
                     </div>
-                  </div>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-4 flex items-center justify-between gap-4">
+                <button type="button" onClick={() => emblaApi?.scrollPrev()} className="flex size-11 shrink-0 items-center justify-center rounded-full border border-stone-400 text-3xl leading-none transition-colors duration-200 hover:border-green-500 hover:bg-green-500 hover:text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-400" aria-label="Mostrar foto anterior" title="Foto anterior">‹</button>
+                <span aria-live="polite" aria-atomic="true" className="min-w-0 text-center">
+                  <span className="block truncate text-base">{activePhoto?.label}</span>
+                  <span className="block text-sm text-stone-400">{activePhotoIndex + 1} / {photos.length}</span>
+                </span>
+                <button type="button" onClick={() => emblaApi?.scrollNext()} className="flex size-11 shrink-0 items-center justify-center rounded-full border border-stone-400 text-3xl leading-none transition-colors duration-200 hover:border-green-500 hover:bg-green-500 hover:text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-400" aria-label="Mostrar foto siguiente" title="Foto siguiente">›</button>
+              </div>
+              <div className="mt-5 flex gap-3 overflow-x-auto px-1 py-2 md:justify-center">
+                {photos.map((photo, photoIndex) => (
+                  <button key={photo.src} type="button" onClick={() => emblaApi?.scrollTo(photoIndex)} className={`size-16 shrink-0 overflow-hidden rounded-sm border transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-400 ${photoIndex === activePhotoIndex ? "border-green-400 opacity-100" : "border-stone-600 opacity-55 hover:opacity-100"}`} aria-label={`Mostrar ${photo.label}`} aria-pressed={photoIndex === activePhotoIndex} title={photo.label}>
+                    <img src={photo.src} alt="" className="size-full object-cover" loading="lazy" />
+                  </button>
                 ))}
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-between gap-4">
-              <button
-                type="button"
-                onClick={() => emblaApi?.scrollPrev()}
-                className="flex size-11 shrink-0 items-center justify-center rounded-full border border-stone-400 text-3xl leading-none transition-colors duration-200 hover:border-green-500 hover:bg-green-500 hover:text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-400"
-                aria-label="Mostrar foto anterior"
-                title="Foto anterior"
-              >
-                ‹
-              </button>
-              <span aria-live="polite" aria-atomic="true" className="min-w-0 text-center">
-                <span className="block truncate text-base">{activePhoto.label}</span>
-                <span className="block text-sm text-stone-400">
-                  {activePhotoIndex + 1} / {photos.length}
-                </span>
-              </span>
-              <button
-                type="button"
-                onClick={() => emblaApi?.scrollNext()}
-                className="flex size-11 shrink-0 items-center justify-center rounded-full border border-stone-400 text-3xl leading-none transition-colors duration-200 hover:border-green-500 hover:bg-green-500 hover:text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-400"
-                aria-label="Mostrar foto siguiente"
-                title="Foto siguiente"
-              >
-                ›
-              </button>
-            </div>
-            <div className="mt-5 flex gap-3 overflow-x-auto px-1 py-2 md:justify-center">
-              {photos.map((photo, photoIndex) => (
-                <button
-                  key={photo.src}
-                  type="button"
-                  onClick={() => emblaApi?.scrollTo(photoIndex)}
-                  className={`size-16 shrink-0 overflow-hidden rounded-sm border transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-400 ${photoIndex === activePhotoIndex ? "border-green-400 opacity-100" : "border-stone-600 opacity-55 hover:opacity-100"}`}
-                  aria-label={`Mostrar ${photo.label}`}
-                  aria-pressed={photoIndex === activePhotoIndex}
-                  title={photo.label}
-                >
-                  <img
-                    src={photo.src}
-                    alt=""
-                    className="size-full object-cover"
-                    loading="lazy"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
+          ) : (
+            <p role="status" className="mt-8 text-sm text-stone-300">
+              {photosLoading ? "Cargando fotos..." : "Aún no hay fotos publicadas."}
+            </p>
+          )}
           <a
             href="/work"
             className="group mt-8 inline-flex items-center gap-2 text-xl underline decoration-green-400 hover:decoration-green-200"

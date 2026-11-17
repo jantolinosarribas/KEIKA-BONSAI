@@ -15,6 +15,27 @@ const { title = "KeikaBonsai", noindex = false } = Astro.props;
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <script is:inline data-astro-rerun>
       (() => {
+        if (!window.__keikaThemeSwapSync) {
+          document.addEventListener("astro:before-swap", (event) => {
+            const currentTheme = document.documentElement.dataset.theme;
+            if (currentTheme) event.newDocument.documentElement.dataset.theme = currentTheme;
+          });
+          window.__keikaThemeSwapSync = true;
+        }
+
+        const themeKey = "keikabonsai-theme";
+        let savedTheme = null;
+        try {
+          savedTheme = localStorage.getItem(themeKey);
+        } catch {}
+
+        document.documentElement.dataset.theme =
+          savedTheme === "light" || savedTheme === "dark"
+            ? savedTheme
+            : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+
         const introKey = "keikabonsai-home-intro-played";
         const prefersReducedMotion = window.matchMedia(
           "(prefers-reduced-motion: reduce)",

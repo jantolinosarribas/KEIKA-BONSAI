@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, Moon, Sun, X } from "lucide-react";
 
 const navigationLinks = [
   ["01", "Arbolario", "/work"],
@@ -10,8 +10,13 @@ const navigationLinks = [
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   const headerRef = useRef(null);
   const menuButtonRef = useRef(null);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.dataset.theme === "dark");
+  }, []);
 
   useEffect(() => {
     if (!mobileMenuOpen) return;
@@ -38,20 +43,41 @@ export default function Header() {
     };
   }, [mobileMenuOpen]);
 
+  function toggleTheme() {
+    const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = nextTheme;
+    setIsDark(nextTheme === "dark");
+    try {
+      localStorage.setItem("keikabonsai-theme", nextTheme);
+    } catch {}
+  }
+
   return (
     <header ref={headerRef} className="site-header fixed top-0 left-0 bg-green/30 backdrop-blur-md w-full h-20 z-20 flex items-center justify-between px-5">
       <h1 className="text-2xl md:text-4xl bbh-sans-bogle-regular text-green-800 cursor-pointer">
         <a href="/">KEIKABONSAI</a>
       </h1>
-      <nav aria-label="Navegación principal" className="hidden items-center gap-7 md:flex lg:gap-10">
-        {navigationLinks.map(([number, label, href]) => (
-          <a key={href} href={href} className="header-link group relative flex flex-col items-center gap-0.5 px-1 py-2">
-            <span className="text-[0.65rem] leading-none opacity-65">{number}</span>
-            <span>{label}</span>
-            <span aria-hidden="true" className="header-link-indicator absolute bottom-0 left-0 h-px w-0 bg-green-800 transition-all duration-200 group-hover:w-full group-focus-visible:w-full" />
-          </a>
-        ))}
-      </nav>
+      <div className="ml-auto hidden items-center gap-5 md:flex">
+        <nav aria-label="Navegación principal" className="flex items-center gap-7 lg:gap-10">
+          {navigationLinks.map(([number, label, href]) => (
+            <a key={href} href={href} className="header-link group relative flex flex-col items-center gap-0.5 px-1 py-2">
+              <span className="text-[0.65rem] leading-none opacity-65">{number}</span>
+              <span>{label}</span>
+              <span aria-hidden="true" className="header-link-indicator absolute bottom-0 left-0 h-px w-0 bg-green-800 transition-all duration-200 group-hover:w-full group-focus-visible:w-full" />
+            </a>
+          ))}
+        </nav>
+        <button
+          type="button"
+          className="theme-toggle flex size-11 items-center justify-center rounded-full text-green-800 transition-colors hover:bg-green-900/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-700"
+          aria-label={isDark ? "Activar modo claro" : "Activar modo oscuro"}
+          title={isDark ? "Activar modo claro" : "Activar modo oscuro"}
+          aria-pressed={isDark}
+          onClick={toggleTheme}
+        >
+          {isDark ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
+        </button>
+      </div>
       <button
         ref={menuButtonRef}
         type="button"
@@ -80,6 +106,19 @@ export default function Header() {
               <span className="text-lg">{label}</span>
             </a>
           ))}
+          <div role="group" aria-labelledby="mobile-accessibility-heading" className="border-t border-zinc-900/10 py-4">
+            <p id="mobile-accessibility-heading" className="mb-2 text-xs font-medium uppercase text-green-700">Accesibilidad</p>
+            <button
+              type="button"
+              className="theme-toggle flex min-h-11 w-full items-center gap-3 rounded px-2 py-2 text-left text-green-900 transition-colors hover:bg-green-900/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-700"
+              aria-label={isDark ? "Activar modo claro" : "Activar modo oscuro"}
+              aria-pressed={isDark}
+              onClick={toggleTheme}
+            >
+              {isDark ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
+              <span>{isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}</span>
+            </button>
+          </div>
         </nav>
       </div>
     </header>

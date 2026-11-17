@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArrowUpRight, Download, LogOut, Mail, Plus, Save, Trash2, Upload, X } from "lucide-react";
-import { categories, plants as initialPlants } from "../data/plants";
+import { categories, getPlantPhotos, plants as initialPlants } from "../data/plants";
 import { journalEntries as initialEntries } from "../data/journalEntries";
 import { hasPartialConfiguration, supabase } from "../lib/supabase";
 
@@ -145,14 +145,17 @@ export default function AdminPanel() {
 
   function editRecord(record) {
     if (!canDiscard()) return;
-    clearFeedback(); setDraft({ ...record }); setIsNew(false); setDirty(false);
+    const editableRecord = tab === "plants"
+      ? { ...record, photos: getPlantPhotos(record).map((photo) => ({ ...photo, date: photo.date ?? "" })) }
+      : { ...record };
+    clearFeedback(); setDraft(editableRecord); setIsNew(false); setDirty(false);
   }
 
   function newRecord() {
     if (!canDiscard()) return;
     clearFeedback(); setIsNew(true); setDirty(false);
     setDraft(tab === "plants" ? {
-      id: `arbol-${crypto.randomUUID()}`, category: "prebonsais", commonName: "", scientificName: "", description: "",
+      id: `arbol-${crypto.randomUUID()}`, category: "prebonsais", commonName: "", scientificName: "", description: "", image: null, photos: [],
     } : {
       id: `entrada-${crypto.randomUUID()}`, plantId: records.plants[0]?.id ?? "",
       date: new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()),
@@ -164,8 +167,16 @@ export default function AdminPanel() {
     event.preventDefault(); clearFeedback(); setBusy(true);
     try {
       const payload = tab === "plants"
-        ? Object.fromEntries(["id", "category", ...plantFields.map(([name]) => name), "description", "image"]
-          .map((name) => [name, draft[name]?.trim() || null]))
+        ? {
+            ...Object.fromEntries(["id", "category", ...plantFields.map(([name]) => name), "description"]
+              .map((name) => [name, draft[name]?.trim() || null])),
+            image: draft.photos?.[0]?.src || null,
+            photos: (draft.photos ?? []).map((photo) => ({
+              src: photo.src,
+              alt: photo.alt || draft.commonName,
+              date: photo.date || null,
+            })),
+          }
         : {
             id: draft.id, plantId: draft.plantId, date: draft.date, title: draft.title.trim(),
             description: draft.description.trim(), observation: draft.observation?.trim() || null,
@@ -214,22 +225,27 @@ export default function AdminPanel() {
     if (files.some((file) => !imageTypes[file.type] || file.size > 10485760)) {
       setFailure("Admite JPG, PNG, WebP o AVIF de hasta 10 MB por foto."); return;
     }
-    if (tab === "journal" && (draft.photos?.length ?? 0) + files.length > 20) {
-      setFailure("Cada entrada admite hasta 20 fotos."); return;
+    if ((draft.photos?.length ?? 0) + files.length > 20) {
+      setFailure(tab === "plants" ? "Cada árbol admite hasta 20 fotos." : "Cada entrada admite hasta 20 fotos."); return;
     }
     setBusy(true);
     const uploaded = [];
     try {
       const photos = [];
+      const uploadDate = new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
       for (const file of files) {
         const path = `${user.id}/${crypto.randomUUID()}.${imageTypes[file.type]}`;
         const { error } = await supabase.storage.from("plant-photos").upload(path, file, { contentType: file.type, upsert: false });
         if (error) throw error;
         uploaded.push(path);
         const { data } = supabase.storage.from("plant-photos").getPublicUrl(path);
-        photos.push({ src: data.publicUrl, alt: tab === "plants" ? draft.commonName || "\u00c1rbol" : draft.title || "Foto del proceso" });
+        photos.push({
+          src: data.publicUrl,
+          alt: tab === "plants" ? draft.commonName || "\u00c1rbol" : draft.title || "Foto del proceso",
+          ...(tab === "plants" ? { date: uploadDate } : {}),
+        });
       }
-      if (tab === "plants") changeField("image", photos[0].src);
+      if (tab === "plants") changeField("photos", [...(draft.photos ?? []), ...photos]);
       else changeField("photos", [...(draft.photos ?? []), ...photos]);
     } catch (error) {
       if (uploaded.length) await supabase.storage.from("plant-photos").remove(uploaded);
@@ -260,7 +276,7 @@ export default function AdminPanel() {
   </div>;
 
   const items = tab === "plants" ? records.plants : records.entries;
-  const photos = tab === "plants" ? (draft?.image ? [{ src: draft.image, alt: draft.commonName }] : []) : draft?.photos ?? [];
+  const photos = draft?.photos ?? [];
 
   return <div className="mt-6 text-green-950">
     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-green-900/20 pb-5">
@@ -305,17 +321,18 @@ export default function AdminPanel() {
             <label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={Boolean(draft.isMock)} onChange={(event) => changeField("isMock", event.target.checked)} className="size-4 accent-green-800" />Entrada de ejemplo</label>
           </>}
           <div className="border-t border-green-900/20 pt-5">
-            <h3 className="text-base font-medium">{tab === "plants" ? "Foto principal" : "Fotos"}</h3>
+            <h3 className="text-base font-medium">{tab === "plants" ? "Fotos del árbol" : "Fotos"}</h3>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
               {photos.map((photo, index) => <div key={`${photo.src}-${index}`} className="min-w-0">
                 <div className="relative aspect-[4/3] bg-green-900/5">
                   <img src={photo.src} alt={photo.alt || "Foto"} className="size-full object-contain" />
-                  <button type="button" title="Quitar foto" aria-label={`Quitar foto ${index + 1}`} onClick={() => tab === "plants" ? changeField("image", "") : changeField("photos", photos.filter((_photo, photoIndex) => photoIndex !== index))} className="absolute top-2 right-2 flex size-11 items-center justify-center rounded bg-white/90 text-red-800 focus-visible:outline-2 focus-visible:outline-red-700"><X size={18} aria-hidden="true" /></button>
+                  <button type="button" title="Quitar foto" aria-label={`Quitar foto ${index + 1}`} onClick={() => changeField("photos", photos.filter((_photo, photoIndex) => photoIndex !== index))} className="absolute top-2 right-2 flex size-11 items-center justify-center rounded bg-white/90 text-red-800 focus-visible:outline-2 focus-visible:outline-red-700"><X size={18} aria-hidden="true" /></button>
                 </div>
+                {tab === "plants" && <Field label={`Fecha de la foto ${index + 1}`}><input type="date" value={photo.date ?? ""} onChange={(event) => changeField("photos", photos.map((current, photoIndex) => photoIndex === index ? { ...current, date: event.target.value } : current))} className={inputClass} /></Field>}
                 {tab === "journal" && <Field label={`Descripci\u00f3n de la foto ${index + 1}`}><input maxLength={300} value={photo.alt ?? ""} onChange={(event) => changeField("photos", photos.map((current, photoIndex) => photoIndex === index ? { ...current, alt: event.target.value } : current))} className={inputClass} /></Field>}
               </div>)}
             </div>
-            <label className="mt-4 block text-sm text-green-900"><span className="flex items-center gap-2"><Upload size={18} aria-hidden="true" />{tab === "plants" ? "Subir foto" : "A\u00f1adir fotos"}</span><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple={tab === "journal"} onChange={uploadPhotos} className="mt-2 block w-full min-w-0 text-sm file:mr-3 file:rounded file:border file:border-green-900/30 file:bg-white/60 file:px-3 file:py-2 file:text-green-950" /></label>
+            <label className="mt-4 block text-sm text-green-900"><span className="flex items-center gap-2"><Upload size={18} aria-hidden="true" />A&ntilde;adir fotos</span><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple onChange={uploadPhotos} className="mt-2 block w-full min-w-0 text-sm file:mr-3 file:rounded file:border file:border-green-900/30 file:bg-white/60 file:px-3 file:py-2 file:text-green-950" /></label>
           </div>
           <div className="flex flex-wrap items-center gap-3 border-t border-green-900/20 pt-5">
             <button type="submit" className={`${buttonClass} bg-green-800 text-white hover:bg-green-900`}><Save size={18} aria-hidden="true" />{busy ? "Guardando..." : "Guardar"}</button>

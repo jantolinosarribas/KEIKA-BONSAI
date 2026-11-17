@@ -1,6 +1,6 @@
 export default function WhatsSection() {
   return (
-    <section className="w-full">
+    <section id="whats-keika" className="w-full scroll-mt-24">
       <div className="mx-10">
         <span className="text-8xl bbh-sans-bogle-regular text-green-800">
           WHATS KEIKA BONSAI

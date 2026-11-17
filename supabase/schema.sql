@@ -25,6 +25,7 @@ create table public.plants (
   "commonName" text not null check (length(trim("commonName")) between 1 and 200),
   "scientificName" text not null check (length(trim("scientificName")) between 1 and 200),
   image text,
+  photos jsonb not null default '[]'::jsonb check (jsonb_typeof(photos) = 'array'),
   description text,
   age text,
   "cultivationTime" text,
@@ -83,7 +84,15 @@ begin
     raise exception 'La importacion requiere las dos tablas vacias.';
   end if;
   insert into public.plants
-    select * from jsonb_populate_recordset(null::public.plants, plant_data);
+    (id, category, "commonName", "scientificName", image, photos, description,
+      age, "cultivationTime", origin, location, substrate, "futureDesign")
+    select plant.id, plant.category, plant."commonName", plant."scientificName",
+      plant.image,
+      coalesce(plant.photos, case when plant.image is null then '[]'::jsonb
+        else jsonb_build_array(jsonb_build_object('src', plant.image, 'alt', plant."commonName", 'date', null)) end),
+      plant.description, plant.age, plant."cultivationTime", plant.origin,
+      plant.location, plant.substrate, plant."futureDesign"
+    from jsonb_populate_recordset(null::public.plants, plant_data) as plant;
   insert into public.journal_entries
     (id, "plantId", date, title, description, "isMock", observation, "nextStep", photos)
     select id, "plantId", date, title, description, coalesce("isMock", false),

@@ -4,6 +4,38 @@ import test from "node:test";
 import { PGlite } from "@electric-sql/pglite";
 import { plants } from "../src/data/plants.ts";
 import { journalEntries } from "../src/data/journalEntries.ts";
+import { getPlantPhotos } from "../src/data/plants.ts";
+
+test("plant photo galleries preserve dates and support legacy single images", () => {
+  assert.deepEqual(getPlantPhotos({
+    commonName: "Olivo",
+    image: "/old.jpg",
+    photos: [{ src: "https://project.supabase.co/storage/v1/object/public/plant-photos/new.jpg", alt: "Olivo en trabajo", date: "2026-11-17" }],
+  }), [{ src: "https://project.supabase.co/storage/v1/object/public/plant-photos/new.jpg", alt: "Olivo en trabajo", date: "2026-11-17" }]);
+  assert.deepEqual(getPlantPhotos({ commonName: "Olivo", image: "/old.jpg" }), []);
+  assert.deepEqual(getPlantPhotos({
+    commonName: "Olivo",
+    image: "https://project.supabase.co/storage/v1/object/public/plant-photos/old.jpg",
+  }), [
+    { src: "https://project.supabase.co/storage/v1/object/public/plant-photos/old.jpg", alt: "Olivo", date: null },
+  ]);
+});
+
+test("plant photo migration carries legacy images into the gallery", async () => {
+  const db = new PGlite();
+  try {
+    await db.exec(`
+      create table public.plants ("commonName" text not null, image text);
+      insert into public.plants values ('Olivo', '/olivo-antiguo.jpg');
+    `);
+    await db.exec(await readFile(new URL("../supabase/migrations/20261117_plant_photo_galleries.sql", import.meta.url), "utf8"));
+    assert.deepEqual((await db.query('select photos from public.plants where "commonName" = \'Olivo\'')).rows[0].photos, [
+      { src: "/olivo-antiguo.jpg", alt: "Olivo", date: null },
+    ]);
+  } finally {
+    await db.close();
+  }
+});
 
 test("Supabase schema protects content and photos", async () => {
   const db = new PGlite();
@@ -26,6 +58,7 @@ test("Supabase schema protects content and photos", async () => {
       grant select, insert, update, delete on storage.objects to anon, authenticated;
     `);
     await db.exec(await readFile(new URL("../supabase/schema.sql", import.meta.url), "utf8"));
+    await db.exec(await readFile(new URL("../supabase/migrations/20261117_import_initial_content_photos.sql", import.meta.url), "utf8"));
     await db.exec(`
       insert into auth.users values ('11111111-1111-4111-8111-111111111111'),
         ('22222222-2222-4222-8222-222222222222');

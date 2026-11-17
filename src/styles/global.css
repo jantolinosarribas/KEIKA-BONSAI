@@ -2,6 +2,24 @@
 @import url('https://fonts.googleapis.com/css2?family=BBH+Sans+Bogle&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 @import "tailwindcss";
 
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-green-50: #17231a;
+  --color-green-100: #111a14;
+  --color-green-200: #bdddc2;
+  --color-green-300: #a6d0ac;
+  --color-green-400: #91c399;
+  --color-green-500: #79b382;
+  --color-green-600: #8dc196;
+  --color-green-700: #a8d1ae;
+  --color-green-800: #c0ddc4;
+  --color-green-900: #d6e8d8;
+  --color-green-950: #eff5ef;
+  --color-white: #1d2921;
+  --color-red-700: #ff8a84;
+  --color-red-800: #ffaaa5;
+}
+
 @layer base {
   :where(a[href], button, summary, select, [role="button"], [role="tab"], input[type="button"], input[type="submit"], input[type="reset"]):not(:disabled):not([aria-disabled="true"]) {
     @apply cursor-pointer;
@@ -42,7 +60,7 @@ html {
 
 html.home-intro-pending .hero-kanji {
   --kanji-intro-scale: 2.4;
-  color: #166534;
+  color: var(--color-green-800);
   opacity: 1;
   animation: home-kanji-settle 1.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   transform-origin: center;
@@ -83,6 +101,20 @@ html.home-intro-pending .site-header {
   }
 }
 
+.scroll-cue-icon {
+  animation: scroll-cue-nudge 1.6s ease-in-out 420ms infinite;
+}
+
+@keyframes scroll-cue-nudge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
 @media (max-width: 767px) {
   html.home-intro-pending .hero-kanji {
     --kanji-intro-scale: 1.65;
@@ -90,6 +122,10 @@ html.home-intro-pending .site-header {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .scroll-cue-icon {
+    animation: none;
+  }
+
   html.home-intro-pending .hero-kanji,
   html.home-intro-pending .hero-title,
   html.home-intro-pending .site-header {
@@ -164,4 +200,76 @@ html.nav-over-dark .site-header .mobile-menu-toggle {
   border-radius: 16px;
   padding: 2rem;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.site-header,
+.projects-section {
+  transition: background-color 240ms ease, color 240ms ease;
+}
+
+html[data-theme="dark"] .site-header {
+  background-color: rgb(17 26 20 / 88%);
+  color: #d6e8d8;
+}
+
+html[data-theme="dark"] .site-header h1,
+html[data-theme="dark"] .site-header .header-link,
+html[data-theme="dark"] .site-header .theme-toggle,
+html[data-theme="dark"] .site-header .mobile-menu-toggle {
+  color: #d6e8d8;
+}
+
+html[data-theme="dark"] .site-header .header-link:hover {
+  color: #b9e8c1;
+}
+
+html[data-theme="dark"] .site-header .header-link-indicator {
+  background-color: #a8d1ae;
+}
+
+html[data-theme="dark"] .site-header #mobile-navigation {
+  background-color: #1d2921;
+  color: #eff5ef;
+}
+
+html[data-theme="dark"] .site-header #mobile-navigation a {
+  border-color: rgb(214 232 216 / 14%);
+}
+
+html[data-theme="dark"] button.bg-green-800 {
+  background-color: #2d6239;
+}
+
+html[data-theme="dark"] .hover\:bg-green-900:hover {
+  background-color: #244b30;
+}
+
+html[data-theme="dark"] .projects-section {
+  background-color: #e1e9df;
+}
+
+html[data-theme="dark"] .projects-section .text-stone-100,
+html[data-theme="dark"] .projects-section .text-stone-400,
+html[data-theme="dark"] .projects-section .text-zinc-950 {
+  color: #1b2c20;
+}
+
+html[data-theme="dark"] .projects-section .border-stone-400 {
+  border-color: #829284;
+}
+
+html[data-theme="dark"] .projects-section .border-stone-600 {
+  border-color: #a5b2a6;
+}
+
+html[data-theme="dark"] .projects-section::before {
+  filter: grayscale(1);
+  opacity: 0.14;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .projects-section {
+    transition: none;
+  }
 }

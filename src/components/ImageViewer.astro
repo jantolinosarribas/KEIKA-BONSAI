@@ -46,7 +46,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 </dialog>
 
 <script>
-  type ViewerPhoto = { src: string; alt: string };
+  type ViewerPhoto = { src: string; alt: string; dateLabel?: string };
 
   let restoreViewer: (() => void) | undefined;
   let galleryPhotos: ViewerPhoto[] = [];
@@ -66,7 +66,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
     image.src = photo.src;
     image.alt = photo.alt;
-    caption.textContent = photo.alt;
+    caption.textContent = photo.dateLabel ? `${photo.alt} · ${photo.dateLabel}` : photo.alt;
     position.textContent = `${activePhotoIndex + 1} / ${galleryPhotos.length}`;
     position.hidden = galleryPhotos.length < 2;
     dialog.querySelectorAll<HTMLButtonElement>("[data-image-viewer-step]").forEach((button) => {

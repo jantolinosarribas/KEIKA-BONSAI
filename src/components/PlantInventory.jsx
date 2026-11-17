@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
-import { ChevronDown, Sprout, ZoomIn } from "lucide-react";
-import { categories, plants as initialPlants } from "../data/plants";
+import { ChevronDown } from "lucide-react";
+import { categories, getPlantPhotos, plants as initialPlants } from "../data/plants";
+import PlantPhotoGallery from "./PlantPhotoGallery";
 
 export default function PlantInventory({ plants = initialPlants }) {
   const [activeCategory, setActiveCategory] = useState(categories[0].id);
@@ -82,35 +83,7 @@ export default function PlantInventory({ plants = initialPlants }) {
                 className="plant-details group min-w-0 overflow-hidden rounded-lg border border-green-900/15 bg-white/30"
               >
                 <summary className="list-none cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-green-700 [&::-webkit-details-marker]:hidden">
-                  <div className="relative aspect-[4/3] overflow-hidden bg-green-900/5">
-                    {plant.image ? (
-                      <>
-                        <img
-                          src={plant.image}
-                          alt={plant.commonName}
-                          className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                          loading="lazy"
-                        />
-                        <button
-                          type="button"
-                          data-image-viewer
-                          data-image-src={plant.image}
-                          data-image-alt={plant.commonName}
-                          aria-haspopup="dialog"
-                          aria-label={`Ampliar foto de ${plant.commonName}`}
-                          title={`Ampliar foto de ${plant.commonName}`}
-                          className="absolute right-3 bottom-3 flex size-11 items-center justify-center rounded bg-black/55 text-white hover:bg-black/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-                        >
-                          <ZoomIn size={18} aria-hidden="true" />
-                        </button>
-                      </>
-                    ) : (
-                      <div className="flex size-full flex-col items-center justify-center gap-3 text-green-900/45">
-                        <Sprout aria-hidden="true" size={30} strokeWidth={1.4} />
-                        <span className="text-sm">Foto pendiente</span>
-                      </div>
-                    )}
-                  </div>
+                  <PlantPhotoGallery photos={getPlantPhotos(plant)} plantName={plant.commonName} />
                   <div className="flex items-start justify-between gap-4 p-5">
                     <span className="min-w-0">
                       <span className="mb-1 block text-sm text-green-700">

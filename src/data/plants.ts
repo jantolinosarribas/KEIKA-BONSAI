@@ -3,12 +3,19 @@ export const categories = [
   { id: "bonsais", label: "Bonsáis" },
 ];
 
+export interface PlantPhoto {
+  src: string;
+  alt: string;
+  date?: string | null;
+}
+
 export interface Plant {
   id: string;
   category: string;
   commonName: string;
   scientificName: string;
   image?: string;
+  photos?: PlantPhoto[];
   description?: string;
   age?: string;
   cultivationTime?: string;
@@ -18,20 +25,49 @@ export interface Plant {
   futureDesign?: string;
 }
 
+function isPlantStorageUrl(src: string): boolean {
+  try {
+    const url = new URL(src);
+    return (url.protocol === "https:" || url.protocol === "http:")
+      && /\/storage\/v1\/object\/public\/plant-photos\/[^/]+/.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
+export function getPlantPhotos(plant: Pick<Plant, "commonName" | "image" | "photos">): PlantPhoto[] {
+  const photos = (plant.photos ?? []).filter((photo) => photo && typeof photo.src === "string" && isPlantStorageUrl(photo.src));
+  if (photos.length) {
+    return photos.map((photo) => ({
+      src: photo.src,
+      alt: photo.alt || plant.commonName,
+      date: photo.date ?? null,
+    }));
+  }
+  return plant.image && isPlantStorageUrl(plant.image)
+    ? [{ src: plant.image, alt: plant.commonName, date: null }]
+    : [];
+}
+
+export function formatPlantPhotoDate(date?: string | null): string {
+  if (!date) return "Fecha no registrada";
+  const parsedDate = new Date(`${date}T12:00:00Z`);
+  if (Number.isNaN(parsedDate.getTime())) return "Fecha no registrada";
+  return new Intl.DateTimeFormat("es", { dateStyle: "long", timeZone: "UTC" }).format(parsedDate);
+}
+
 export const plants: Plant[] = [
   {
     id: "pino-negro-japones-001",
     category: "prebonsais",
     commonName: "Pino negro japonés",
     scientificName: "Pinus thunbergii",
-    image: "/WhatsApp%20Image%202026-11-03%20at%2012.28.10%20PM.jpeg",
   },
   {
     id: "higuera-001",
     category: "prebonsais",
     commonName: "Higuera",
     scientificName: "Ficus carica",
-    image: "/WhatsApp%20Image%202026-11-03%20at%2012.28.10%20PM%20(2).jpeg",
   },
   {
     id: "granado-001",
@@ -44,7 +80,6 @@ export const plants: Plant[] = [
     category: "prebonsais",
     commonName: "Aguacate",
     scientificName: "Persea americana",
-    image: "/WhatsApp%20Image%202026-11-03%20at%2012.28.10%20PM%20(3).jpeg",
   },
   {
     id: "olivo-001",
@@ -63,7 +98,6 @@ export const plants: Plant[] = [
     category: "prebonsais",
     commonName: "Arce japonés",
     scientificName: "Acer palmatum",
-    image: "/WhatsApp%20Image%202026-11-03%20at%2012.28.10%20PM%20(1).jpeg",
   },
   {
     id: "acebuche-001",
@@ -82,13 +116,11 @@ export const plants: Plant[] = [
     category: "bonsais",
     commonName: "Olmo chino",
     scientificName: "Ulmus parvifolia",
-    image: "/WhatsApp%20Image%202026-11-03%20at%2012.52.23%20PM%20(1).jpeg",
   },
   {
     id: "enebro-rastrero-japones-001",
     category: "bonsais",
     commonName: "Enebro rastrero japonés",
     scientificName: "Juniperus procumbens 'Nana'",
-    image: "/WhatsApp%20Image%202026-11-03%20at%2012.52.23%20PM.jpeg",
   },
 ];
